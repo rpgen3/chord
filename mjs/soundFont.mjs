@@ -1,4 +1,5 @@
-const {getScript} = await import('https://rpgen3.github.io/mylib/export/import.mjs');
+import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
+import {flat2sharp} from 'https://rpgen3.github.io/chord/mjs/flat2sharp.mjs';
 export const soundFont = new class {
     constructor(){
         this.loaded = new Set;
@@ -15,7 +16,7 @@ export const soundFont = new class {
                 const res = await fetch(v),
                       buf = await res.arrayBuffer(),
                       ctx = new AudioContext();
-                return [k, {ctx, buf: await ctx.decodeAudioData(buf)}];
+                return [flat2sharp(k), {ctx, buf: await ctx.decodeAudioData(buf)}];
             }))
         );
     }
