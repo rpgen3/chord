@@ -18,7 +18,7 @@ export const soundFont = new class {
                       buf = await res.arrayBuffer(),
                       ctx = new AudioContext(),
                       _buf = await ctx.decodeAudioData(buf);
-                this._play({ctx, buf: _buf, volume = 0.01});
+                this._play({ctx, buf: _buf, volume: 0.01});
                 return [flat2sharp(k), {ctx, buf: _buf}];
             }))
         );
