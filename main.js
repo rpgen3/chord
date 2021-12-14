@@ -40,7 +40,11 @@
     const selectKey = rpgen3.addSelect(input.dl, {
         label: 'キー',
         save: true,
-        list: rpgen4.piano.keys,
+        list: (a => {
+            let n = 3;
+            while(n--) a.push(a.shift());
+            return a;
+        })(rpgen4.piano.keys.slice()),
         value: 'C'
     });
     const selectOctave = rpgen3.addSelect(input.dl, {
@@ -66,6 +70,6 @@
         const root = rpgen4.piano.note2index(selectKey() + selectOctave()),
               chord = rpgen4.inversion(selectChord(), selectInversion()).map(v => v + root).map(v => rpgen4.piano.note[v]),
               synth = new Tone.PolySynth().toMaster();
-        synth.triggerAttackRelease(chord, '4n');
+        synth.triggerAttackRelease(chord, '8n');
     };
 })();
