@@ -1,4 +1,4 @@
-const {getScript} = await import(`https://rpgen3.github.io/mylib/export/import.mjs`);
+const {getScript} = await import('https://rpgen3.github.io/mylib/export/import.mjs');
 export const soundFont = new class {
     constructor(){
         this.loaded = new Set;
