@@ -1,10 +1,10 @@
 (async () => {
-    const {importAll, getScript, importAllSettled} = await import(`https://rpgen3.github.io/mylib/export/import.mjs`);
+    const {importAll, getScript} = await import('https://rpgen3.github.io/mylib/export/import.mjs');
     await Promise.all([
         'https://code.jquery.com/jquery-3.3.1.min.js',
-        'https://unpkg.com/tone@14.7.77/build/Tone.js'
+        'https://colxi.info/midi-parser-js/src/main.js'
     ].map(getScript));
-    const {$, Tone} = window;
+    const {$, MidiParser} = window;
     const html = $('body').empty().css({
         'text-align': 'center',
         padding: '1em',
@@ -24,7 +24,8 @@
         'https://rpgen3.github.io/midi/mjs/piano.mjs',
         [
             'chord',
-            'inversion'
+            'inversion',
+            'soundFont'
         ].map(v => `https://rpgen3.github.io/chord/mjs/${v}.mjs`)
     ].flat());
     [
@@ -65,11 +66,24 @@
         list: (max => [...Array(max * 2 + 1).keys()].map(v => v - max))(Math.max(...Object.values(rpgen4.chord).map(v => v.length))),
         value: 0
     });
+    const selectFont = rpgen3.addSelect(input.dl, {
+        label: 'サウンドフォント',
+        save: true,
+        list: [
+            'acoustic_grand_piano',
+            'koto'
+        ]
+    });
+    selectFont.elm.on('change', async () => {
+        const v = selectFont();
+        selectFont.elm.prop('disabled', true);
+        await rpgen4.soundFont.load(v, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${v}-mp3.js`);
+        selectFont.elm.prop('disabled', false);
+    }).trigger('change');
     rpgen3.addBtn(input.html, 'play', () => playChord()).addClass('btn');
     const playChord = () => {
         const root = rpgen4.piano.note2index(selectKey() + selectOctave()),
-              chord = rpgen4.inversion(selectChord(), selectInversion()).map(v => v + root).map(v => rpgen4.piano.note[v]),
-              synth = new Tone.PolySynth().toMaster();
-        synth.triggerAttackRelease(chord, '8n');
+              chord = rpgen4.inversion(selectChord(), selectInversion()).map(v => v + root).map(v => rpgen4.piano.note[v]);
+        for(const v of chord) rpgen4.soundFont.play(v);
     };
 })();
