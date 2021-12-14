@@ -16,9 +16,10 @@ export const soundFont = new class {
             await Promise.all(Object.entries(window.MIDI.Soundfont[fontName]).map(async ([k, v]) => {
                 const res = await fetch(v),
                       buf = await res.arrayBuffer(),
-                      ctx = new AudioContext();
-                this._play({ctx, buf, mute: true});
-                return [flat2sharp(k), {ctx, buf: await ctx.decodeAudioData(buf)}];
+                      ctx = new AudioContext(),
+                      _buf = await ctx.decodeAudioData(buf);
+                this._play({ctx, buf: _buf, mute: true});
+                return [flat2sharp(k), {ctx, buf: _buf}];
             }))
         );
     }
