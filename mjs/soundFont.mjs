@@ -33,6 +33,6 @@ export const soundFont = new class {
     }
     play(note, volume = 1.0){
         const {notes} = this;
-        if(notes.has(note)) this._play(Object.assign(notes.get(note), {volume}));
+        if(notes.has(note)) this._play(Object.assign({volume}, notes.get(note)));
     }
 };
