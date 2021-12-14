@@ -18,18 +18,18 @@ export const soundFont = new class {
                       buf = await res.arrayBuffer(),
                       ctx = new AudioContext(),
                       _buf = await ctx.decodeAudioData(buf);
-                this._play({ctx, buf: _buf, mute: true});
+                this._play({ctx, buf: _buf, volume = 0.01});
                 return [flat2sharp(k), {ctx, buf: _buf}];
             }))
         );
     }
-    _play({ctx, buf, mute = false, volume = 1.0}){
+    _play({ctx, buf, volume = 1.0}){
         const src = ctx.createBufferSource(),
               gain = ctx.createGain();
         src.buffer = buf;
         gain.gain.value = volume;
         src.connect(gain).connect(ctx.destination);
-        if(!mute) src.start();
+        src.start();
     }
     play(note, volume = 1.0){
         const {notes} = this;
