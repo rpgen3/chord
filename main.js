@@ -1,7 +1,10 @@
 (async () => {
     const {importAll, getScript, importAllSettled} = await import(`https://rpgen3.github.io/mylib/export/import.mjs`);
-    await getScript('https://code.jquery.com/jquery-3.3.1.min.js');
-    const {$} = window;
+    await Promise.all([
+        'https://code.jquery.com/jquery-3.3.1.min.js',
+        'https://unpkg.com/tone@14.7.77/build/Tone.js'
+    ].map(getScript));
+    const {$, Tone} = window;
     const html = $('body').empty().css({
         'text-align': 'center',
         padding: '1em',
@@ -34,11 +37,17 @@
             this.dl = $('<dl>').appendTo(this.html);
         }
     };
+    const selectKey = rpgen3.addSelect(input.dl, {
+        label: 'キー',
+        save: true,
+        list: rpgen4.piano.keys,
+        value: 'C'
+    });
     const selectOctave = rpgen3.addSelect(input.dl, {
         label: 'オクターヴ',
         save: true,
-        list: rpgen4.piano.octave,
-        value: 'C'
+        list: [2, 3, 4, 5, 6],
+        value: 4
     });
     const selectChord = rpgen3.addSelect(input.dl, {
         label: 'コード',
@@ -54,5 +63,9 @@
     });
     rpgen3.addBtn(input.html, 'play', () => playChord()).addClass('btn');
     const playChord = () => {
+        const root = rpgen4.piano.note2index(selectKey() + selectOctave()),
+              chord = rpgen4.inversion(selectChord(), selectInversion()).map(v => v + root).map(v => rpgen4.piano.note[v]),
+              synth = new Tone.PolySynth().toMaster();
+        synth.triggerAttackRelease(chord, '4n');
     };
 })();
