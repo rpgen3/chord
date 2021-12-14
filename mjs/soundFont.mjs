@@ -17,17 +17,21 @@ export const soundFont = new class {
                 const res = await fetch(v),
                       buf = await res.arrayBuffer(),
                       ctx = new AudioContext();
+                this._play({ctx, buf, mute: true});
                 return [flat2sharp(k), {ctx, buf: await ctx.decodeAudioData(buf)}];
             }))
         );
     }
-    play(note){
-        const {notes} = this;
-        if(!notes.has(note)) return;
-        const {ctx, buf} = notes.get(note),
-              src = ctx.createBufferSource();
+    _play({ctx, buf, mute = false, volume = 1.0}){
+        const src = ctx.createBufferSource(),
+              gain = ctx.createGain();
         src.buffer = buf;
-        src.connect(ctx.destination);
-        src.start();
+        gain.gain.value = volume;
+        src.connect(gain).connect(ctx.destination);
+        if(!mute) src.start();
+    }
+    play(note, volume = 1.0){
+        const {notes} = this;
+        if(notes.has(note)) this._play(Object.assign(notes.get(note), {volume}));
     }
 };
