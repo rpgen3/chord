@@ -6,7 +6,7 @@ export const soundFont = new class {
         this.loaded = new Set;
         this.bufs = new Map;
         this.ctx = null;
-        this.node = null;
+        this.tail = null;
     }
     init(){ // must done after user gesture
         if(!this.ctx) this.ctx = new AudioContext();
@@ -36,12 +36,12 @@ export const soundFont = new class {
               gain = ctx.createGain();
         src.buffer = buf;
         gain.gain.value = volume;
-        if(!this.node) this.node = ctx.createGain();
-        src.connect(gain).connect(this.node).connect(ctx.destination);
+        if(!this.tail) this.tail = ctx.createGain();
+        src.connect(gain).connect(this.tail).connect(ctx.destination);
         src.start(0, 0, duration);
     }
     stop(){
-        this.node?.disconnect(this.ctx.destination);
-        this.node = null;
+        this.tail?.disconnect(this.ctx.destination);
+        this.tail = null;
     }
 };
