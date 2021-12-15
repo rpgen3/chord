@@ -72,7 +72,23 @@
         list: [
             notSelected,
             'acoustic_grand_piano',
-            'koto'
+            'acoustic_guitar_nylon',
+            'acoustic_guitar_steel',
+            'bassoon',
+            'cello',
+            'church_organ',
+            'clarinet',
+            'flute',
+            'fx_1_rain',
+            'kalimba',
+            'koto',
+            'music_box',
+            'oboe',
+            'trombone',
+            'violin',
+            'voice_oohs',
+            'vibraphone',
+            'xylophone'
         ]
     });
     let nowFont = null;
