@@ -172,7 +172,7 @@
     };
     let startTime = 0,
         nowIndex = 0,
-        myReq = null;
+        myReq = 0;
     const update = async () => {
         const time = performance.now() - startTime,
               _time = g_midiTime[nowIndex];
@@ -180,8 +180,71 @@
         if(time > _time) for(const v of g_midi.get(_time)) rpgen4.soundFont.play(...v);
         myReq = requestAnimationFrame(update);
     };
+    const getBPM = midi => {
+        const {track} = midi;
+        let bpm = 0;
+        for(const {event} of track) {
+            for(const v of event) {
+                if(v.type !== 0xFF || v.metaType !== 0x51) continue;
+                bpm = 6E7 / v.data;
+                break;
+            }
+            if(bpm) break;
+        }
+        if(bpm) return bpm;
+        else throw 'BPM is none.';
+    };
     let parsedMidi = null;
-    const parseMidi = async midi => {
+    const parseMidi = async midi => { // note, volume, duration
         await rpgen3.sleep();
+        const {track, timeDivision} = midi,
+              deltaToMs = 1000 * 60 / getBPM(midi) / timeDivision,
+              currentIndexs = [...Array(track.length).fill(0)],
+              totalTimes = currentIndexs.slice(),
+              _indexs = [...Array(track.length).keys()],
+              result = [];
+        let currentTime = 0;
+        const getMin = () => {
+            let min = Infinity,
+                idx = 0;
+            for(const index of _indexs) {
+                const {event} = track[index],
+                      {deltaTime} = event[currentIndexs[index]],
+                      total = deltaTime + totalTimes[index];
+                if(total > min) continue;
+                min = total;
+                idx = index;
+            }
+            return idx;
+        };
+        let _ = 0;
+        while(_indexs.length){
+            const index = getMin(),
+                  {event} = track[index],
+                  {deltaTime, type, data} = event[currentIndexs[index]];
+            totalTimes[index] += deltaTime;
+            if(deltaTime) {
+                const total = totalTimes[index],
+                      time = total - currentTime,
+                      i = result.length - 1;
+                if(isNaN(result[i])) result.push(time);
+                else result[i] += time;
+                currentTime = total;
+            }
+            switch(type){
+                case 8:
+                case 9: {
+                    const [note, velocity] = data,
+                          isNoteOFF = type === 8 || !velocity;
+                    if(isNoteOFF) break;
+                    const id = getSoundId[note - 21];
+                    if(id === void 0) break;
+                    result.push(playSound(id, 100 * velocity / 0x7F | 0));
+                    break;
+                }
+            }
+            if(++currentIndexs[index] >= event.length) _indexs.splice(_indexs.indexOf(index), 1);
+        }
+        return result;
     };
 })();
