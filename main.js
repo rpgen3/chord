@@ -66,20 +66,24 @@
         list: (max => [...Array(max * 2 + 1).keys()].map(v => v - max))(Math.max(...Object.values(rpgen4.chord).map(v => v.length))),
         value: 0
     });
+    const notSelected = 'not selected';
     const selectFont = rpgen3.addSelect(input.dl, {
         label: 'サウンドフォント',
-        save: true,
         list: [
+            notSelected,
             'acoustic_grand_piano',
             'koto'
         ]
     });
+    let nowFont = null;
     selectFont.elm.on('change', async () => {
         const v = selectFont();
+        if(v === notSelected || v === nowFont) return;
+        nowFont = v;
         selectFont.elm.prop('disabled', true);
         await rpgen4.soundFont.load(v, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${v}-mp3.js`);
         selectFont.elm.prop('disabled', false);
-    }).trigger('change');
+    });
     rpgen3.addBtn(input.html, 'play', () => playChord()).addClass('btn');
     const playChord = () => {
         const root = rpgen4.piano.note2index(selectKey() + selectOctave()),
