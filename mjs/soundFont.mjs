@@ -41,6 +41,7 @@ export const soundFont = new class {
         src.start(0, 0, duration);
     }
     stop(){
+        this.node?.disconnect(this.ctx.destination);
         this.node = null;
     }
 };
