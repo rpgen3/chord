@@ -5,9 +5,13 @@ export const soundFont = new class {
     constructor(){
         this.loaded = new Set;
         this.bufs = new Map;
-        this.ctx = new AudioContext();
+        this.ctx = null;
+    }
+    init(){ // must be create after user gesture
+        if(!this.ctx) this.ctx = new AudioContext();
     }
     async load(fontName, url){
+        this.init();
         const {loaded, bufs, ctx} = this;
         if(!loaded.has(url)) {
             loaded.add(url);
@@ -19,21 +23,19 @@ export const soundFont = new class {
                 const res = await fetch(v),
                       buf = await res.arrayBuffer(),
                       _buf = await ctx.decodeAudioData(buf);
-                this._play(_buf, 0.01);
                 return [flat2sharp(k), _buf];
             }))
         )) bufs.set(...v);
     }
-    _play(buf, volume = 1.0){
-        const src = ctx.createBufferSource(),
+    play(note, volume = 1.0){
+        const {bufs, ctx} = this;
+        if(!bufs.has(note)) return;
+        const buf = bufs.get(note),
+              src = ctx.createBufferSource(),
               gain = ctx.createGain();
         src.buffer = buf;
         gain.gain.value = volume;
         src.connect(gain).connect(ctx.destination);
         src.start();
-    }
-    play(note, volume = 1.0){
-        const {bufs} = this;
-        if(bufs.has(note)) this._play(bufs.get(note), volume);
     }
 };
