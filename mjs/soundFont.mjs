@@ -7,7 +7,7 @@ export const soundFont = new class {
         this.bufs = new Map;
         this.ctx = null;
     }
-    init(){ // must be create after user gesture
+    init(){ // must done after user gesture
         if(!this.ctx) this.ctx = new AudioContext();
     }
     async load(fontName, url){
