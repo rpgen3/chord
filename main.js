@@ -138,29 +138,50 @@
             '厄神様の通り道': 'bnAh4QP'
         }
     });
-    let g_midi = null,
-        nowMidi = null;
+    let nowMidi = null;
     selectMidi.elm.on('change', async () => {
         const v = selectMidi();
         if(v === notSelected || v === nowMidi) return;
         nowMidi = v;
         selectMidi.elm.prop('disabled', true);
-        g_midi = MidiParser.parse(rpgen3.img2arr(await rpgen3.loadSrc('img', `https://i.imgur.com/${v}.png`)));
+        await parseMidi(MidiParser.parse(rpgen3.img2arr(await rpgen3.loadSrc('img', `https://i.imgur.com/${v}.png`))));
         selectMidi.elm.prop('disabled', false);
     });
     $('<dt>').appendTo(h_playMidi.dl).text('ファイル入力');
     MidiParser.parse($('<input>').appendTo($('<dd>').appendTo(h_playMidi.dl)).prop({
         type: 'file',
         accept: '.mid'
-    }).get(0), result => {
-        g_midi = result;
+    }).get(0), async result => {
+        selectMidi.elm.prop('disabled', true);
+        await parseMidi(result);
+        selectMidi.elm.prop('disabled', false);
     });
     rpgen3.addBtn(h_playMidi.dl, 'play', () => playMidi()).addClass('btn');
-    rpgen3.addBtn(h_playMidi.dl, 'stop', () => rpgen4.soundFont.stop()).addClass('btn');
-    const playMidi = () => {
-        const root = rpgen4.piano.note2index(selectKey() + selectOctave()),
-              chord = rpgen4.inversion(selectChord(), selectInversion()).map(v => v + root).map(v => rpgen4.piano.note[v]);
+    rpgen3.addBtn(h_playMidi.dl, 'stop', () => {
+        cancelAnimationFrame(myReq);
         rpgen4.soundFont.stop();
-        for(const v of chord) rpgen4.soundFont.play(v);
+    }).addClass('btn');
+    let g_midi = null,
+        g_midiTime = null;
+    const playMidi = () => {
+        g_midi = parsedMidi;
+        g_midiTime = [...g_midi.keys()];
+        startTime = performance.now();
+        nowIndex = 0;
+        update();
+    };
+    let startTime = 0,
+        nowIndex = 0,
+        myReq = null;
+    const update = async () => {
+        const time = performance.now() - startTime,
+              _time = g_midiTime[nowIndex];
+        if(!_time && _time !== 0) return;
+        if(time > _time) for(const v of g_midi.get(_time)) rpgen4.soundFont.play(...v);
+        myReq = requestAnimationFrame(update);
+    };
+    let parsedMidi = null;
+    const parseMidi = async midi => {
+        await rpgen3.sleep();
     };
 })();
