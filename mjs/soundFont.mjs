@@ -27,7 +27,7 @@ export const soundFont = new class {
             }))
         )) bufs.set(...v);
     }
-    play(note, volume = 1.0){
+    play(note, volume = 1.0, duration){
         const {bufs, ctx} = this;
         if(!bufs.has(note)) return;
         const buf = bufs.get(note),
@@ -36,6 +36,6 @@ export const soundFont = new class {
         src.buffer = buf;
         gain.gain.value = volume;
         src.connect(gain).connect(ctx.destination);
-        src.start();
+        src.start(0, 0, duration);
     }
 };
