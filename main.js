@@ -104,6 +104,7 @@
     const playChord = () => {
         const root = rpgen4.piano.note2index(selectKey() + selectOctave()),
               chord = rpgen4.inversion(selectChord(), selectInversion()).map(v => v + root).map(v => rpgen4.piano.note[v]);
+        rpgen4.soundFont.stop();
         for(const v of chord) rpgen4.soundFont.play(v);
     };
 })();
