@@ -136,7 +136,11 @@
         label: 'サンプルMIDI',
         list: {
             [notSelected]: notSelected,
-            '厄神様の通り道': 'bnAh4QP'
+            '厄神様の通り道': 'bnAh4QP',
+            '竹取飛翔': 'r6YykIX',
+            'a': '4BRC0W1',
+            'クラゲ': 'mWwy4ne',
+            'マグロ': '4N3OZkS'
         }
     });
     let nowMidi = null;
@@ -173,11 +177,17 @@
     let startTime = 0,
         nowIndex = 0,
         myReq = 0;
+    const earRape = 100;
     const update = async () => {
         const time = performance.now() - startTime,
               _time = parsedMidiKeys[nowIndex];
         if(!_time && _time !== 0) return;
-        if(time > _time) for(const v of parsedMidi.get(_time)) rpgen4.soundFont.play(...v);
+        if(time > _time) {
+            nowIndex++;
+            if(time - _time < earRape) for(const v of parsedMidi.get(_time)) {
+                rpgen4.soundFont.play(...v);
+            }
+        }
         myReq = requestAnimationFrame(update);
     };
     const getBPM = midi => {
@@ -222,17 +232,18 @@
         const deltaToMs = 1000 * 60 / getBPM(midi) / timeDivision;
         while(heap.length) {
             const {note, velocity, start, end} = heap.pop(),
-                  _note = rpgen3.piano.note[note];
+                  _note = rpgen4.piano.note[note - 21];
             if(_note) {
                 const [_start, _end] = [start, end].map(v => v * deltaToMs | 0);
                 if(!parsedMidi.has(_start)) parsedMidi.set(_start, []);
-                parsedMidi.get(_start).push(new SoundFontNode(
+                parsedMidi.get(_start).push([
                     _note,
-                    100 * velocity / 0x7F | 0,
+                    velocity / 0x7F,
                     _end - _start
-                ));
+                ]);
             }
         }
+        window.parsedMidi = parsedMidi
     };
     class MidiNode {
         constructor(note, velocity, start){
@@ -240,13 +251,6 @@
             this.velocity = velocity;
             this.start = start;
             this.end = -1;
-        }
-    }
-    class SoundFontNode {
-        constructor(note, volume, duration){
-            this.note = note;
-            this.volume = volume;
-            this.duration = duration;
         }
     }
 })();
