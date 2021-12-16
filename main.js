@@ -171,6 +171,7 @@
     let parsedMidi = new Map,
         parsedMidiKeys = null;
     const playMidi = () => {
+        stopMidi();
         parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now();
         nowIndex = 0;
