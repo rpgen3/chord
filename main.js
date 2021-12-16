@@ -36,7 +36,7 @@
     ].map(v => `https://rpgen3.github.io/spatialFilter/css/${v}.css`).map(rpgen3.addCSS);
     const notSelected = 'not selected';
     const selectFont = rpgen3.addSelect($('<dl>').appendTo(main), {
-        label: 'サウンドフォント',
+        label: 'SoundFont',
         list: [
             notSelected,
             'acoustic_grand_piano',
@@ -86,12 +86,18 @@
     };
     const h_playChord = new class {
         constructor(){
-            const {html} = addHideArea('和音の確認');
+            const {html} = addHideArea('check code');
             this.dl = $('<dl>').appendTo(html);
         }
     };
+    const selectOctave = rpgen3.addSelect(h_playChord.dl, {
+        label: 'octave',
+        save: true,
+        list: [2, 3, 4, 5, 6],
+        value: 4
+    });
     const selectKey = rpgen3.addSelect(h_playChord.dl, {
-        label: 'キー',
+        label: 'key',
         save: true,
         list: (a => {
             let n = 3;
@@ -100,20 +106,14 @@
         })(rpgen4.piano.keys.slice()),
         value: 'C'
     });
-    const selectOctave = rpgen3.addSelect(h_playChord.dl, {
-        label: 'オクターヴ',
-        save: true,
-        list: [2, 3, 4, 5, 6],
-        value: 4
-    });
     const selectChord = rpgen3.addSelect(h_playChord.dl, {
-        label: 'コード',
+        label: 'code',
         save: true,
         list: rpgen4.chord,
         value: 'M'
     });
     const selectInversion = rpgen3.addSelect(h_playChord.dl, {
-        label: '転回指数',
+        label: 'inversion',
         save: true,
         list: (max => [...Array(max * 2 + 1).keys()].map(v => v - max))(Math.max(...Object.values(rpgen4.chord).map(v => v.length))),
         value: 0
@@ -128,12 +128,12 @@
     };
     const h_playMidi = new class {
         constructor(){
-            const {html} = addHideArea('MIDIの再生');
+            const {html} = addHideArea('play MIDI');
             this.dl = $('<dl>').appendTo(html);
         }
     };
     const selectMidi = rpgen3.addSelect(h_playMidi.dl, {
-        label: 'サンプルMIDI',
+        label: 'sample',
         list: {
             [notSelected]: notSelected,
             '厄神様の通り道': 'bnAh4QP',
@@ -152,7 +152,7 @@
         await parseMidi(MidiParser.parse(rpgen3.img2arr(await rpgen3.loadSrc('img', `https://i.imgur.com/${v}.png`))));
         selectMidi.elm.prop('disabled', false);
     });
-    $('<dt>').appendTo(h_playMidi.dl).text('ファイル入力');
+    $('<dt>').appendTo(h_playMidi.dl).text('input file');
     MidiParser.parse($('<input>').appendTo($('<dd>').appendTo(h_playMidi.dl)).prop({
         type: 'file',
         accept: '.mid'
@@ -160,6 +160,11 @@
         selectMidi.elm.prop('disabled', true);
         await parseMidi(result);
         selectMidi.elm.prop('disabled', false);
+    });
+    $('<dt>').appendTo(h_playMidi.dl).text('option');
+    const isSetDuration = rpgen3.addInputBool(h_playMidi.dl, {
+        label: 'is set duration',
+        save: true
     });
     rpgen3.addBtn(h_playMidi.dl, 'play', () => playMidi()).addClass('btn');
     rpgen3.addBtn(h_playMidi.dl, 'stop', () => stopMidi()).addClass('btn');
@@ -185,8 +190,11 @@
         if(!_time && _time !== 0) return;
         if(time > _time) {
             nowIndex++;
-            if(time - _time < earRape) for(const v of parsedMidi.get(_time)) {
-                rpgen4.soundFont.play(...v);
+            if(time - _time < earRape) {
+                const flag = isSetDuration();
+                for(const [note, volume, duration] of parsedMidi.get(_time)) {
+                    rpgen4.soundFont.play(note, volume, flag ? duration : undefined);
+                }
             }
         }
         myReq = requestAnimationFrame(update);
@@ -240,11 +248,10 @@
                 parsedMidi.get(_start).push([
                     _note,
                     velocity / 0x7F,
-                    _end - _start
+                    (_end - _start) / 1000
                 ]);
             }
         }
-        window.parsedMidi = parsedMidi
     };
     class MidiNode {
         constructor(note, velocity, start){
