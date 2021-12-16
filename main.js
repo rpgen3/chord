@@ -162,10 +162,7 @@
         selectMidi.elm.prop('disabled', false);
     });
     rpgen3.addBtn(h_playMidi.dl, 'play', () => playMidi()).addClass('btn');
-    rpgen3.addBtn(h_playMidi.dl, 'stop', () => {
-        cancelAnimationFrame(myReq);
-        rpgen4.soundFont.stop();
-    }).addClass('btn');
+    rpgen3.addBtn(h_playMidi.dl, 'stop', () => stopMidi()).addClass('btn');
     let parsedMidi = new Map,
         parsedMidiKeys = null;
     const playMidi = () => {
@@ -173,6 +170,10 @@
         startTime = performance.now();
         nowIndex = 0;
         update();
+    };
+    const stopMidi = () => {
+        cancelAnimationFrame(myReq);
+        rpgen4.soundFont.stop();
     };
     let startTime = 0,
         nowIndex = 0,
@@ -205,7 +206,7 @@
         else throw 'BPM is none.';
     };
     const parseMidi = async midi => { // note, volume, duration
-        await rpgen3.sleep();
+        stopMidi();
         parsedMidi.clear();
         const {track, timeDivision} = midi,
               heap = new rpgen4.Heap();
