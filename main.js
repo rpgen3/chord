@@ -22,6 +22,7 @@
         'str2img'
     ].map(v => `https://rpgen3.github.io/mylib/export/${v}.mjs`));
     const rpgen4 = await importAll([
+        'https://rpgen3.github.io/maze/mjs/heap/Heap.mjs',
         'https://rpgen3.github.io/midi/mjs/piano.mjs',
         [
             'chord',
@@ -161,11 +162,10 @@
         cancelAnimationFrame(myReq);
         rpgen4.soundFont.stop();
     }).addClass('btn');
-    let g_midi = null,
-        g_midiTime = null;
+    let parsedMidi = new Map,
+        parsedMidiKeys = null;
     const playMidi = () => {
-        g_midi = parsedMidi;
-        g_midiTime = [...g_midi.keys()];
+        parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now();
         nowIndex = 0;
         update();
@@ -175,9 +175,9 @@
         myReq = 0;
     const update = async () => {
         const time = performance.now() - startTime,
-              _time = g_midiTime[nowIndex];
+              _time = parsedMidiKeys[nowIndex];
         if(!_time && _time !== 0) return;
-        if(time > _time) for(const v of g_midi.get(_time)) rpgen4.soundFont.play(...v);
+        if(time > _time) for(const v of parsedMidi.get(_time)) rpgen4.soundFont.play(...v);
         myReq = requestAnimationFrame(update);
     };
     const getBPM = midi => {
@@ -194,57 +194,59 @@
         if(bpm) return bpm;
         else throw 'BPM is none.';
     };
-    let parsedMidi = null;
     const parseMidi = async midi => { // note, volume, duration
         await rpgen3.sleep();
+        parsedMidi.clear();
         const {track, timeDivision} = midi,
-              deltaToMs = 1000 * 60 / getBPM(midi) / timeDivision,
-              currentIndexs = [...Array(track.length).fill(0)],
-              totalTimes = currentIndexs.slice(),
-              _indexs = [...Array(track.length).keys()],
-              result = [];
-        let currentTime = 0;
-        const getMin = () => {
-            let min = Infinity,
-                idx = 0;
-            for(const index of _indexs) {
-                const {event} = track[index],
-                      {deltaTime} = event[currentIndexs[index]],
-                      total = deltaTime + totalTimes[index];
-                if(total > min) continue;
-                min = total;
-                idx = index;
-            }
-            return idx;
-        };
-        let _ = 0;
-        while(_indexs.length){
-            const index = getMin(),
-                  {event} = track[index],
-                  {deltaTime, type, data} = event[currentIndexs[index]];
-            totalTimes[index] += deltaTime;
-            if(deltaTime) {
-                const total = totalTimes[index],
-                      time = total - currentTime,
-                      i = result.length - 1;
-                if(isNaN(result[i])) result.push(time);
-                else result[i] += time;
-                currentTime = total;
-            }
-            switch(type){
-                case 8:
-                case 9: {
-                    const [note, velocity] = data,
-                          isNoteOFF = type === 8 || !velocity;
-                    if(isNoteOFF) break;
-                    const id = getSoundId[note - 21];
-                    if(id === void 0) break;
-                    result.push(playSound(id, 100 * velocity / 0x7F | 0));
-                    break;
+              heap = new rpgen4.Heap();
+        for(const {event} of track) {
+            const now = new Map;
+            let currentTime = 0;
+            for(const {deltaTime, type, data} of event) { // 全noteを回収
+                currentTime += deltaTime;
+                if(type !== 8 && type !== 9) continue;
+                const [note, velocity] = data,
+                      isNoteOFF = type === 8 || !velocity;
+                if(now.has(note) && isNoteOFF) {
+                    const node = now.get(note);
+                    node.end = currentTime;
+                    heap.push(node.start, node);
+                    now.delete(note);
+                }
+                else if(!isNoteOFF) {
+                    const node = new MidiNode(note, velocity, currentTime);
+                    now.set(note, node);
                 }
             }
-            if(++currentIndexs[index] >= event.length) _indexs.splice(_indexs.indexOf(index), 1);
         }
-        return result;
+        const deltaToMs = 1000 * 60 / getBPM(midi) / timeDivision;
+        while(heap.length) {
+            const {note, velocity, start, end} = heap.pop(),
+                  _note = rpgen3.piano.note[note];
+            if(_note) {
+                const [_start, _end] = [start, end].map(v => v * deltaToMs | 0);
+                if(!parsedMidi.has(_start)) parsedMidi.set(_start, []);
+                parsedMidi.get(_start).push(new SoundFontNode(
+                    _note,
+                    100 * velocity / 0x7F | 0,
+                    _end - _start
+                ));
+            }
+        }
     };
+    class MidiNode {
+        constructor(note, velocity, start){
+            this.note = note;
+            this.velocity = velocity;
+            this.start = start;
+            this.end = -1;
+        }
+    }
+    class SoundFontNode {
+        constructor(note, volume, duration){
+            this.note = note;
+            this.volume = volume;
+            this.duration = duration;
+        }
+    }
 })();
