@@ -84,90 +84,85 @@
             }
         });
     };
-    const h_playChord = new class {
-        constructor(){
-            const {html} = addHideArea('check code');
-            this.dl = $('<dl>').appendTo(html);
-        }
-    };
-    const selectOctave = rpgen3.addSelect(h_playChord.dl, {
-        label: 'octave',
-        save: true,
-        list: [2, 3, 4, 5, 6],
-        value: 4
-    });
-    const selectKey = rpgen3.addSelect(h_playChord.dl, {
-        label: 'key',
-        save: true,
-        list: (a => {
-            let n = 3;
-            while(n--) a.push(a.shift());
-            return a;
-        })(rpgen4.piano.keys.slice()),
-        value: 'C'
-    });
-    const selectChord = rpgen3.addSelect(h_playChord.dl, {
-        label: 'code',
-        save: true,
-        list: rpgen4.chord,
-        value: 'M'
-    });
-    const selectInversion = rpgen3.addSelect(h_playChord.dl, {
-        label: 'inversion',
-        save: true,
-        list: (max => [...Array(max * 2 + 1).keys()].map(v => v - max))(Math.max(...Object.values(rpgen4.chord).map(v => v.length))),
-        value: 0
-    });
-    rpgen3.addBtn(h_playChord.dl, 'play', () => playChord()).addClass('btn');
-    rpgen3.addBtn(h_playChord.dl, 'stop', () => rpgen4.soundFont.stop()).addClass('btn');
-    const playChord = () => {
-        const root = rpgen4.piano.note2index(selectKey() + selectOctave()),
-              chord = rpgen4.inversion(selectChord(), selectInversion()).map(v => v + root).map(v => rpgen4.piano.note[v]);
+    {
+        const {html} = addHideArea('check code');
+        const selectOctave = rpgen3.addSelect(html, {
+            label: 'octave',
+            save: true,
+            list: [2, 3, 4, 5, 6],
+            value: 4
+        });
+        const selectKey = rpgen3.addSelect(html, {
+            label: 'key',
+            save: true,
+            list: (a => {
+                let n = 3;
+                while(n--) a.push(a.shift());
+                return a;
+            })(rpgen4.piano.keys.slice()),
+            value: 'C'
+        });
+        const selectChord = rpgen3.addSelect(html, {
+            label: 'code',
+            save: true,
+            list: rpgen4.chord,
+            value: 'M'
+        });
+        const selectInversion = rpgen3.addSelect(html, {
+            label: 'inversion',
+            save: true,
+            list: (max => [...Array(max * 2 + 1).keys()].map(v => v - max))(Math.max(...Object.values(rpgen4.chord).map(v => v.length))),
+            value: 0
+        });
+        rpgen3.addBtn(html, 'play', () => playChord(selectKey() + selectOctave(), selectChord(), selectInversion())).addClass('btn');
+        rpgen3.addBtn(html, 'stop', () => rpgen4.soundFont.stop()).addClass('btn');
+    }
+    const playChord = (note, chord, inversion) => {
+        const root = rpgen4.piano.note2index(note),
+              a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
         rpgen4.soundFont.stop();
-        for(const v of chord) rpgen4.soundFont.play(v);
+        for(const v of a) rpgen4.soundFont.play(v);
     };
-    const h_playMidi = new class {
-        constructor(){
-            const {html} = addHideArea('play MIDI');
-            this.dl = $('<dl>').appendTo(html);
-        }
-    };
-    const selectMidi = rpgen3.addSelect(h_playMidi.dl, {
-        label: 'sample',
-        list: {
-            [notSelected]: notSelected,
-            '厄神様の通り道': 'bnAh4QP',
-            '竹取飛翔': 'r6YykIX',
-            'a': '4BRC0W1',
-            'クラゲ': 'mWwy4ne',
-            'マグロ': '4N3OZkS'
-        }
-    });
-    let nowMidi = null;
-    selectMidi.elm.on('change', async () => {
-        const v = selectMidi();
-        if(v === notSelected || v === nowMidi) return;
-        nowMidi = v;
-        selectMidi.elm.prop('disabled', true);
-        parseMidi(MidiParser.parse(rpgen3.img2arr(
-            await rpgen3.loadSrc('img', `https://i.imgur.com/${v}.png`)
-        )));
-        selectMidi.elm.prop('disabled', false);
-    });
-    $('<dt>').appendTo(h_playMidi.dl).text('input file');
-    MidiParser.parse($('<input>').appendTo($('<dd>').appendTo(h_playMidi.dl)).prop({
-        type: 'file',
-        accept: '.mid'
-    }).get(0), v => parseMidi(v));
-    $('<dt>').appendTo(h_playMidi.dl).text('option');
-    const isSetDuration = rpgen3.addInputBool(h_playMidi.dl, {
-        label: 'is set duration',
-        save: true
-    });
-    rpgen3.addBtn(h_playMidi.dl, 'play', () => playMidi()).addClass('btn');
-    rpgen3.addBtn(h_playMidi.dl, 'stop', () => stopMidi()).addClass('btn');
-    let parsedMidi = new Map,
-        parsedMidiKeys = null;
+    let isSetDuration = null;
+    {
+        const {html} = addHideArea('play MIDI');
+        const selectMidi = rpgen3.addSelect(html, {
+            label: 'sample',
+            list: {
+                [notSelected]: notSelected,
+                '厄神様の通り道': 'bnAh4QP',
+                '竹取飛翔': 'r6YykIX',
+                'a': '4BRC0W1',
+                'クラゲ': 'mWwy4ne',
+                'マグロ': '4N3OZkS'
+            }
+        });
+        let nowMidi = null;
+        selectMidi.elm.on('change', async () => {
+            const v = selectMidi();
+            if(v === notSelected || v === nowMidi) return;
+            nowMidi = v;
+            selectMidi.elm.prop('disabled', true);
+            parseMidi(MidiParser.parse(rpgen3.img2arr(
+                await rpgen3.loadSrc('img', `https://i.imgur.com/${v}.png`)
+            )));
+            selectMidi.elm.prop('disabled', false);
+        });
+        $('<dt>').appendTo(html).text('input file');
+        MidiParser.parse($('<input>').appendTo($('<dd>').appendTo(html)).prop({
+            type: 'file',
+            accept: '.mid'
+        }).get(0), v => parseMidi(v));
+        $('<dt>').appendTo(html).text('option');
+        isSetDuration = rpgen3.addInputBool(html, {
+            label: 'is set duration',
+            save: true
+        });
+        rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
+        rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
+    }
+    const parsedMidi = new Map;
+    let parsedMidiKeys = null;
     const playMidi = () => {
         stopMidi();
         parsedMidiKeys = [...parsedMidi.keys()];
