@@ -36,9 +36,10 @@ export const soundFont = new class {
               gain = ctx.createGain();
         src.buffer = buf;
         gain.gain.value = volume;
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + Math.min(buf.duration, duration + 0.5));
         if(!this.tail) this.tail = ctx.createGain();
         src.connect(gain).connect(this.tail).connect(ctx.destination);
-        src.start(0, 0, duration);
+        src.start(0);
     }
     stop(){
         this.tail?.disconnect(this.ctx.destination);
