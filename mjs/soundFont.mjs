@@ -28,7 +28,7 @@ export const soundFont = new class {
             }))
         )) bufs.set(...v);
     }
-    play(note, volume = 1.0, duration){
+    play(note, volume = 1.0, duration = 0.5){
         const {bufs, ctx} = this;
         if(!bufs.has(note)) return;
         const buf = bufs.get(note),
