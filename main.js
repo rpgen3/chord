@@ -133,7 +133,15 @@
                 '竹取飛翔': 'r6YykIX',
                 'a': '4BRC0W1',
                 'クラゲ': 'mWwy4ne',
-                'マグロ': '4N3OZkS'
+                'マグロ': '4N3OZkS',
+                'U.N.オーエンは彼女なのか？': 'ORWqjdj',
+                '明治十七年の上海アリス': 'jTyK9wz',
+                '華のさかづき大江山': '31Unddb',
+                '時代親父とハイカラ少女': 'yct204E',
+                '永遠の春夢': 'aAlch5g',
+                '海鬼月': '8bsTZIp',
+                'あねもねぐりっち': 'uAigio7',
+                'かるみあどーるず': '4t8zrav'
             }
         });
         let nowMidi = null;
@@ -156,23 +164,23 @@
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
     }
     const parsedMidi = new Map;
-    let parsedMidiKeys = null;
+    let parsedMidiKeys = null,
+        intervalId = -1;
     const playMidi = () => {
         stopMidi();
         parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now();
         nowIndex = 0;
-        update();
+        intervalId = setInterval(update);
     };
     const stopMidi = () => {
-        cancelAnimationFrame(myReq);
+        clearInterval(intervalId);
         rpgen4.soundFont.stop();
     };
     let startTime = 0,
-        nowIndex = 0,
-        myReq = 0;
+        nowIndex = 0;
     const earRape = 100;
-    const update = async () => {
+    const update = () => {
         const time = performance.now() - startTime,
               _time = parsedMidiKeys[nowIndex];
         if(!_time && _time !== 0) return;
@@ -180,7 +188,6 @@
             nowIndex++;
             if(time - _time < earRape) for(const v of parsedMidi.get(_time)) rpgen4.soundFont.play(...v);
         }
-        myReq = requestAnimationFrame(update);
     };
     const getBPM = midi => {
         const {track} = midi;
