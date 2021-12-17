@@ -152,7 +152,6 @@
             type: 'file',
             accept: '.mid'
         }).get(0), v => parseMidi(v));
-        $('<dt>').appendTo(html).text('option');
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
     }
