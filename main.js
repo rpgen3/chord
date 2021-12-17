@@ -149,18 +149,16 @@
         if(v === notSelected || v === nowMidi) return;
         nowMidi = v;
         selectMidi.elm.prop('disabled', true);
-        await parseMidi(MidiParser.parse(rpgen3.img2arr(await rpgen3.loadSrc('img', `https://i.imgur.com/${v}.png`))));
+        parseMidi(MidiParser.parse(rpgen3.img2arr(
+            await rpgen3.loadSrc('img', `https://i.imgur.com/${v}.png`)
+        )));
         selectMidi.elm.prop('disabled', false);
     });
     $('<dt>').appendTo(h_playMidi.dl).text('input file');
     MidiParser.parse($('<input>').appendTo($('<dd>').appendTo(h_playMidi.dl)).prop({
         type: 'file',
         accept: '.mid'
-    }).get(0), async result => {
-        selectMidi.elm.prop('disabled', true);
-        await parseMidi(result);
-        selectMidi.elm.prop('disabled', false);
-    });
+    }).get(0), v => parseMidi(v));
     $('<dt>').appendTo(h_playMidi.dl).text('option');
     const isSetDuration = rpgen3.addInputBool(h_playMidi.dl, {
         label: 'is set duration',
@@ -214,7 +212,7 @@
         if(bpm) return bpm;
         else throw 'BPM is none.';
     };
-    const parseMidi = async midi => { // note, volume, duration
+    const parseMidi = midi => { // note, volume, duration
         stopMidi();
         parsedMidi.clear();
         const {track, timeDivision} = midi,
@@ -240,9 +238,8 @@
             }
         }
         const deltaToMs = 1000 * 60 / getBPM(midi) / timeDivision;
-        while(heap.length) {
-            const {note, velocity, start, end} = heap.pop(),
-                  _note = rpgen4.piano.note[note - 21];
+        for(const {note, velocity, start, end} of heap) {
+            const _note = rpgen4.piano.note[note - 21];
             if(_note) {
                 const [_start, _end] = [start, end].map(v => v * deltaToMs | 0);
                 if(!parsedMidi.has(_start)) parsedMidi.set(_start, []);
