@@ -123,7 +123,6 @@
         rpgen4.soundFont.stop();
         for(const v of a) rpgen4.soundFont.play(v);
     };
-    let isSetDuration = null;
     {
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
@@ -154,10 +153,6 @@
             accept: '.mid'
         }).get(0), v => parseMidi(v));
         $('<dt>').appendTo(html).text('option');
-        isSetDuration = rpgen3.addInputBool(html, {
-            label: 'is set duration',
-            save: true
-        });
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
     }
@@ -184,12 +179,7 @@
         if(!_time && _time !== 0) return;
         if(time > _time) {
             nowIndex++;
-            if(time - _time < earRape) {
-                const flag = isSetDuration();
-                for(const [note, volume, duration] of parsedMidi.get(_time)) {
-                    rpgen4.soundFont.play(note, volume, flag ? duration : undefined);
-                }
-            }
+            if(time - _time < earRape) for(const v of parsedMidi.get(_time)) rpgen4.soundFont.play(...v);
         }
         myReq = requestAnimationFrame(update);
     };
