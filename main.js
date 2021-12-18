@@ -202,6 +202,7 @@
         intervalId = -1;
     const playMidi = async () => {
         await stopMidi();
+        await initRecord();
         parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now() - parsedMidiKeys[0] + 500;
         nowIndex = 0;
@@ -284,29 +285,29 @@
             this.end = -1;
         }
     }
+    let initRecord = null;
     {
         const {html} = addHideArea('record play');
         const isRecord = rpgen3.addInputBool(html, {
             label: 'start record'
         });
         let rec = null;
+        const init = async () => {
+            if(!isRecord()) return true;
+            rec = new rpgen4.Record(sf.ctx);
+            sf.anyNode = rec.node;
+            /*await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
+            rec = new AudioWorkletNode(ctx, 'record', {
+                channelCount: 1,
+                channelCountMode: 'explicit',
+                channelInterpretation: 'discrete'
+            });
+            window.sf = sf;
+            window.rec = rec;*/
+        };
+        initRecord = init;
         isRecord.elm.on('change', async () => {
-            if(isRecord()) {
-                const {ctx} = sf;
-                /*await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
-                rec = new AudioWorkletNode(ctx, 'record', {
-                    channelCount: 1,
-                    channelCountMode: 'explicit',
-                    channelInterpretation: 'discrete'
-                });
-                window.sf = sf;
-                window.rec = rec;*/
-                rec = new rpgen4.Record(ctx);
-                sf.anyNode = rec.node;
-            }
-            else {
-                sf.anyNode = null;
-            }
+            if(await init()) sf.anyNode = null;
         });
         rpgen3.addBtn(html, 'download', () => {
             rpgen3.download(rec.toWAV(), 'chord.wav');
