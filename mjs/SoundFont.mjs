@@ -4,6 +4,8 @@ export class SoundFont {
     constructor(){
         this.ctx = null;
         this.bufs = new Map;
+        if(!('MIDI' in window)) window.MIDI = {};
+        if(!('Soundfont' in window.MIDI)) window.MIDI.Soundfont = {};
     }
     init(){ // must done after user gesture
         if(!this.ctx) this.ctx = new AudioContext();
@@ -11,7 +13,7 @@ export class SoundFont {
     async load(fontName, url){ // https://github.com/gleitz/midi-js-soundfonts
         this.init();
         const {ctx, bufs} = this;
-        if(!('MIDI' in window && fontName in window.MIDI.Soundfont)) await getScript(url);
+        if(!(fontName in window.MIDI.Soundfont)) await getScript(url);
         const {Soundfont} = window.MIDI;
         if(!(fontName in Soundfont)) throw `${fontName} is not found`;
         bufs.clear();
