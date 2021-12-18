@@ -115,12 +115,10 @@
             value: 0
         });
         rpgen3.addBtn(html, 'play', () => playChord(selectKey() + selectOctave(), selectChord(), selectInversion())).addClass('btn');
-        rpgen3.addBtn(html, 'stop', () => rpgen4.soundFont.stop()).addClass('btn');
     }
     const playChord = (note, chord, inversion) => {
         const root = rpgen4.piano.note2index(note),
               a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
-        rpgen4.soundFont.stop();
         for(const v of a) rpgen4.soundFont.play(v);
     };
     {
@@ -162,20 +160,21 @@
         }).get(0), v => parseMidi(v));
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
+        rpgen3.addBtn(html, 'play2', () => rpgen4.soundFont.playAll(parsedMidi)).addClass('btn');
     }
     const parsedMidi = new Map;
     let parsedMidiKeys = null,
         intervalId = -1;
-    const playMidi = () => {
-        stopMidi();
+    const playMidi = async () => {
+        await stopMidi();
         parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now();
         nowIndex = 0;
         intervalId = setInterval(update);
     };
-    const stopMidi = () => {
+    const stopMidi = async () => {
         clearInterval(intervalId);
-        rpgen4.soundFont.stop();
+        await rpgen4.soundFont.stop();
     };
     let startTime = 0,
         nowIndex = 0;
@@ -203,8 +202,8 @@
         if(bpm) return bpm;
         else throw 'BPM is none.';
     };
-    const parseMidi = midi => { // note, volume, duration
-        stopMidi();
+    const parseMidi = async midi => { // note, volume, duration
+        await stopMidi();
         parsedMidi.clear();
         const {track, timeDivision} = midi,
               heap = new rpgen4.Heap();
