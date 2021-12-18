@@ -10,11 +10,9 @@ export class Record {
     process(e){
         const {bufferSize} = this,
               {inputBuffer, outputBuffer} = e,
-              samples = inputBuffer.getChannelData(0),
-              buf = new Float32Array(bufferSize);
-        for (let i = 0; i < bufferSize; i++) buf[i] = samples[i];
-        this.bufs.push(buf);
-        outputBuffer.getChannelData(0).set(samples);
+              buf = inputBuffer.getChannelData(0);
+        this.bufs.push(buf.slice());
+        outputBuffer.getChannelData(0).set(buf);
     }
     toWAV(){
         const {sampleRate, bufs} = this,
