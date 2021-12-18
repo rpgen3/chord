@@ -55,7 +55,7 @@
     {
         const {html} = addHideArea('load SoundFont');
         const selectFont = rpgen3.addSelect(html, {
-            label: 'SoundFont',
+            label: 'select SoundFont',
             list: [
                 notSelected,
                 'acoustic_grand_piano',
