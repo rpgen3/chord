@@ -176,17 +176,19 @@
             const v = selectMidi();
             if(v === notSelected || v === nowMidi) return;
             nowMidi = v;
-            selectMidi.elm.prop('disabled', true);
+            const e = selectMidi.elm.add(inputFile);
+            e.prop('disabled', true);
             parseMidi(MidiParser.parse(rpgen3.img2arr(
                 await rpgen3.loadSrc('img', `https://i.imgur.com/${v}.png`)
             )));
-            selectMidi.elm.prop('disabled', false);
+            e.prop('disabled', false);
         });
         $('<dt>').appendTo(html).text('input file');
-        MidiParser.parse($('<input>').appendTo($('<dd>').appendTo(html)).prop({
+        const inputFile = $('<input>').appendTo($('<dd>').appendTo(html)).prop({
             type: 'file',
             accept: '.mid'
-        }).get(0), v => parseMidi(v));
+        });
+        MidiParser.parse(inputFile.get(0), v => parseMidi(v));
         $('<dd>').appendTo(html);
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
         $('<dd>').appendTo(html);
