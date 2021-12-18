@@ -11,7 +11,7 @@ export class SoundFont {
     async load(fontName, url){ // https://github.com/gleitz/midi-js-soundfonts
         this.init();
         const {ctx, bufs} = this;
-        if(!(fontName in window.MIDI?.Soundfont)) await getScript(url);
+        if(!('MIDI' in window && fontName in window.MIDI.Soundfont)) await getScript(url);
         const {Soundfont} = window.MIDI;
         if(!(fontName in Soundfont)) throw `${fontName} is not found`;
         bufs.clear();
