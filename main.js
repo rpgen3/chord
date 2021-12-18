@@ -215,9 +215,9 @@
         for(const {event} of track) {
             const now = new Map;
             let currentTime = 0;
-            for(const {deltaTime, type, data} of event) { // 全noteを回収
+            for(const {deltaTime, type, data, channel} of event) { // 全noteを回収
                 currentTime += deltaTime;
-                if(type !== 8 && type !== 9) continue;
+                if(type !== 8 && type !== 9 || channel === 9) continue;
                 const [note, velocity] = data,
                       isNoteOFF = type === 8 || !velocity;
                 if(now.has(note) && isNoteOFF) {
