@@ -160,7 +160,6 @@
         }).get(0), v => parseMidi(v));
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
-        rpgen3.addBtn(html, 'play2', () => rpgen4.soundFont.playAll(parsedMidi)).addClass('btn');
     }
     const parsedMidi = new Map;
     let parsedMidiKeys = null,
