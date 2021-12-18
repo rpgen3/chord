@@ -27,7 +27,7 @@
         [
             'chord',
             'inversion',
-            'soundFont'
+            'SoundFont'
         ].map(v => `https://rpgen3.github.io/chord/mjs/${v}.mjs`)
     ].flat());
     [
@@ -59,13 +59,14 @@
             'xylophone'
         ]
     });
+    const sf = new rpgen4.SoundFont();
     let nowFont = null;
     selectFont.elm.on('change', async () => {
         const v = selectFont();
         if(v === notSelected || v === nowFont) return;
         nowFont = v;
         selectFont.elm.prop('disabled', true);
-        await rpgen4.soundFont.load(v, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${v}-mp3.js`);
+        await sf.load(v, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${v}-mp3.js`);
         selectFont.elm.prop('disabled', false);
     });
     const hideTime = 500;
@@ -119,7 +120,7 @@
     const playChord = (note, chord, inversion) => {
         const root = rpgen4.piano.note2index(note),
               a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
-        for(const v of a) rpgen4.soundFont.play(v);
+        for(const v of a) sf.play(v);
     };
     {
         const {html} = addHideArea('play MIDI');
@@ -179,7 +180,7 @@
     };
     const stopMidi = async () => {
         clearInterval(intervalId);
-        await rpgen4.soundFont.stop();
+        await sf.stop();
     };
     let startTime = 0,
         nowIndex = 0;
@@ -190,7 +191,7 @@
         if(!_time && _time !== 0) return;
         if(time > _time) {
             nowIndex++;
-            if(time - _time < earRape) for(const v of parsedMidi.get(_time)) rpgen4.soundFont.play(...v);
+            if(time - _time < earRape) for(const v of parsedMidi.get(_time)) sf.play(...v);
         }
     };
     const getBPM = midi => {
