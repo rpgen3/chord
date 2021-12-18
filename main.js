@@ -92,11 +92,11 @@
         input.elm.prop('placeholder', 'see source');
         const dd = $('<dd>').appendTo(html);
         rpgen3.addA(dd, 'https://github.com/gleitz/midi-js-soundfonts/tree/gh-pages/FluidR3_GM', 'source');
-        rpgen3.addBtn(html, 'search', () => {
+        const btn = rpgen3.addBtn(html, 'search', () => {
             loadSF(input());
         }).addClass('btn');
         const loadSF = async fontName => {
-            const e = selectFont.elm.add(input.elm);
+            const e = selectFont.elm.add(input.elm).add(btn);
             e.prop('disabled', true);
             try {
                 await sf.load(fontName, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`);
