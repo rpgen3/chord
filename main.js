@@ -89,7 +89,9 @@
             label: 'search SoundFont',
             save: true
         });
+        input.elm.prop('placeholder', 'see source');
         const dd = $('<dd>').appendTo(html);
+        rpgen3.addA(dd, 'https://github.com/gleitz/midi-js-soundfonts/tree/gh-pages/FluidR3_GM', 'source');
         rpgen3.addBtn(html, 'search', () => {
             loadSF(input());
         }).addClass('btn');
