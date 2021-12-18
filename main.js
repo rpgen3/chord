@@ -283,4 +283,23 @@
             this.end = -1;
         }
     }
+    {
+        const {html} = addHideArea('record play');
+        const isRecord = rpgen3.addInputBool(html, {
+            label: 'start record'
+        });
+        let rec = null;
+        isRecord.elm.on('change', async () => {
+            if(isRecord()) {
+                const {ctx} = sf;
+                await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
+                const rec = new AudioWorkletNode(ctx, 'record');
+                sf.anyNode = rec;
+                window.rec = rec;
+            }
+        });
+        rpgen3.addBtn(html, 'download', () => {
+            rpgen3.download(rec.anyNode.get('data'), 'chord.wav');
+        }).addClass('btn');
+    }
 })();
