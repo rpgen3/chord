@@ -140,7 +140,10 @@
             value: 0
         });
         $('<dd>').appendTo(html);
-        rpgen3.addBtn(html, 'play', () => playChord(selectKey() + selectOctave(), selectChord(), selectInversion())).addClass('btn');
+        rpgen3.addBtn(html, 'play', () => {
+            playChord(selectKey() + selectOctave(), selectChord(), selectInversion());
+            setTimeout(() => record.close(), 500);
+        }).addClass('btn');
     }
     const playChord = (note, chord, inversion) => {
         const root = rpgen4.piano.note2index(note),
@@ -200,9 +203,11 @@
         intervalId = -1;
     const playMidi = async () => {
         await stopMidi();
-        await initRecord();
+        await record.init();
         parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now() - parsedMidiKeys[0] + 500;
+        const t = parsedMidiKeys[parsedMidiKeys.length - 1];
+        endTime = t + Math.max(...parsedMidi.get(t).map(v => v[2])) * 1000;
         nowIndex = 0;
         intervalId = setInterval(update);
     };
@@ -211,11 +216,16 @@
         await sf.stop();
     };
     let startTime = 0,
+        endTime = 0,
         nowIndex = 0;
     const earRape = 100;
     const update = () => {
-        const time = performance.now() - startTime,
-              _time = parsedMidiKeys[nowIndex];
+        const time = performance.now() - startTime;
+        if(time > endTime) {
+            record.close();
+            return stopMidi();
+        }
+        const _time = parsedMidiKeys[nowIndex];
         if(!_time && _time !== 0) return;
         if(time > _time) {
             nowIndex++;
@@ -283,7 +293,7 @@
             this.end = -1;
         }
     }
-    let initRecord = null;
+    const record = {};
     {
         const {html} = addHideArea('record play');
         let rec = null;
@@ -306,9 +316,13 @@
             window.sf = sf;
             window.rec = rec;*/
         };
-        initRecord = init;
+        const close = () => rec.close();
+        Object.assign(record, {init, close});
         isRecord.elm.on('change', async () => {
-            if(await init()) sf.anyNode = null;
+            if(await init()) {
+                close();
+                sf.anyNode = null;
+            }
         });
     }
 })();
