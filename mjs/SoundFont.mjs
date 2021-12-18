@@ -2,23 +2,20 @@ import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
 import {flat2sharp} from 'https://rpgen3.github.io/chord/mjs/flat2sharp.mjs';
 export class SoundFont {
     constructor(){
-        this.loaded = new Set;
-        this.bufs = new Map;
         this.ctx = null;
+        this.bufs = new Map;
     }
     init(){ // must done after user gesture
         if(!this.ctx) this.ctx = new AudioContext();
     }
     async load(fontName, url){ // https://github.com/gleitz/midi-js-soundfonts
         this.init();
-        const {loaded, bufs, ctx} = this;
-        if(!loaded.has(url)) {
-            loaded.add(url);
-            await getScript(url);
-        }
+        const {ctx, bufs} = this,
+              {Soundfont} = window.MIDI;
+        if(!(fontName in Soundfont)) await getScript(url);
         bufs.clear();
         for(const v of (
-            await Promise.all(Object.entries(window.MIDI.Soundfont[fontName]).map(async ([k, v]) => {
+            await Promise.all(Object.entries(Soundfont[fontName]).map(async ([k, v]) => {
                 const res = await fetch(v),
                       buf = await res.arrayBuffer(),
                       _buf = await ctx.decodeAudioData(buf);
@@ -27,7 +24,7 @@ export class SoundFont {
         )) bufs.set(...v);
     }
     play(note = 'C4', volume = 1.0, duration = 0.5){
-        const {bufs, ctx} = this;
+        const {ctx, bufs} = this;
         if(!bufs.has(note)) return;
         const buf = bufs.get(note),
               src = ctx.createBufferSource(),
