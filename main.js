@@ -192,10 +192,8 @@
             accept: '.mid'
         });
         MidiParser.parse(inputFile.get(0), v => parseMidi(v));
-        $('<dd>').appendTo(html);
-        rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
-        $('<dd>').appendTo(html);
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
+        rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
     }
     const parsedMidi = new Map;
     let parsedMidiKeys = null,
@@ -288,10 +286,13 @@
     let initRecord = null;
     {
         const {html} = addHideArea('record play');
+        let rec = null;
+        rpgen3.addBtn(html, 'download', () => {
+            rpgen3.download(rec.toWAV(), 'chord.wav');
+        }).addClass('btn');
         const isRecord = rpgen3.addInputBool(html, {
             label: 'start record'
         });
-        let rec = null;
         const init = async () => {
             if(!isRecord()) return true;
             rec = new rpgen4.Record(sf.ctx);
@@ -309,8 +310,5 @@
         isRecord.elm.on('change', async () => {
             if(await init()) sf.anyNode = null;
         });
-        rpgen3.addBtn(html, 'download', () => {
-            rpgen3.download(rec.toWAV(), 'chord.wav');
-        }).addClass('btn');
     }
 })();
