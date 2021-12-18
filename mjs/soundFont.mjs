@@ -40,7 +40,7 @@ export const soundFont = new class {
         src.start();
     }
     async stop(){
-        await this.ctx.close();
+        await this.ctx?.close();
         this.ctx = null;
         this.init();
     }
