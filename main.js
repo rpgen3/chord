@@ -316,7 +316,7 @@
             window.sf = sf;
             window.rec = rec;*/
         };
-        const close = () => rec.close();
+        const close = () => rec?.close();
         Object.assign(record, {init, close});
         isRecord.elm.on('change', async () => {
             if(await init()) {
