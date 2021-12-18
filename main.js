@@ -27,7 +27,8 @@
         [
             'chord',
             'inversion',
-            'SoundFont'
+            'SoundFont',
+            'Record'
         ].map(v => `https://rpgen3.github.io/chord/mjs/${v}.mjs`)
     ].flat());
     [
@@ -292,19 +293,23 @@
         isRecord.elm.on('change', async () => {
             if(isRecord()) {
                 const {ctx} = sf;
-                await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
+                /*await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
                 rec = new AudioWorkletNode(ctx, 'record', {
                     channelCount: 1,
                     channelCountMode: 'explicit',
                     channelInterpretation: 'discrete'
                 });
-                sf.anyNode = rec;
                 window.sf = sf;
-                window.rec = rec;
+                window.rec = rec;*/
+                rec = new rpgen4.Record(ctx);
+                sf.anyNode = rec.node;
+            }
+            else {
+                sf.anyNode = null;
             }
         });
         rpgen3.addBtn(html, 'download', () => {
-            rpgen3.download(rec.anyNode.get('data'), 'chord.wav');
+            rpgen3.download(rec.toWAV(), 'chord.wav');
         }).addClass('btn');
     }
 })();
