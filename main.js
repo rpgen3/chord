@@ -293,8 +293,13 @@
             if(isRecord()) {
                 const {ctx} = sf;
                 await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
-                const rec = new AudioWorkletNode(ctx, 'record');
+                rec = new AudioWorkletNode(ctx, 'record', {
+                    channelCount: 1,
+                    channelCountMode: 'explicit',
+                    channelInterpretation: 'discrete'
+                });
                 sf.anyNode = rec;
+                window.sf = sf;
                 window.rec = rec;
             }
         });
