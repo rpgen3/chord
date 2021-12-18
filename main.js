@@ -200,7 +200,7 @@
     const playMidi = async () => {
         await stopMidi();
         parsedMidiKeys = [...parsedMidi.keys()];
-        startTime = performance.now();
+        startTime = performance.now() - parsedMidiKeys[0] + 500;
         nowIndex = 0;
         intervalId = setInterval(update);
     };
