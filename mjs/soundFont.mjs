@@ -6,7 +6,6 @@ export const soundFont = new class {
         this.loaded = new Set;
         this.bufs = new Map;
         this.ctx = null;
-        this.tail = null;
     }
     init(){ // must done after user gesture
         if(!this.ctx) this.ctx = new AudioContext();
@@ -37,12 +36,28 @@ export const soundFont = new class {
         src.buffer = buf;
         gain.gain.value = volume;
         gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + Math.min(buf.duration, duration + 0.5));
-        if(!this.tail) this.tail = ctx.createGain();
-        src.connect(gain).connect(this.tail).connect(ctx.destination);
-        src.start(0);
+        src.connect(gain).connect(ctx.destination);
+        src.start();
     }
-    stop(){
-        this.tail?.disconnect(this.ctx.destination);
-        this.tail = null;
+    playAll(map){ // when => [[note, volume, duration]]
+        const {bufs, ctx} = this;
+        for(const [when, arr] of map) {
+            for(const [note, volume, duration] of arr) {
+                if(!bufs.has(note)) return;
+                const buf = bufs.get(note),
+                      src = ctx.createBufferSource(),
+                      gain = ctx.createGain();
+                src.buffer = buf;
+                gain.gain.value = volume;
+                gain.gain.linearRampToValueAtTime(0, when + this.ctx.currentTime + Math.min(buf.duration, duration + 0.5));
+                src.connect(gain).connect(ctx.destination);
+                src.start(when);
+            }
+        }
+    }
+    async stop(){
+        await this.ctx.close();
+        this.ctx = null;
+        this.init();
     }
 };
