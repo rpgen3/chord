@@ -34,41 +34,6 @@
         'container',
         'btn'
     ].map(v => `https://rpgen3.github.io/spatialFilter/css/${v}.css`).map(rpgen3.addCSS);
-    const notSelected = 'not selected';
-    const selectFont = rpgen3.addSelect($('<dl>').appendTo(main), {
-        label: 'SoundFont',
-        list: [
-            notSelected,
-            'acoustic_grand_piano',
-            'acoustic_guitar_nylon',
-            'acoustic_guitar_steel',
-            'bassoon',
-            'cello',
-            'church_organ',
-            'clarinet',
-            'flute',
-            'fx_1_rain',
-            'kalimba',
-            'koto',
-            'music_box',
-            'oboe',
-            'trombone',
-            'violin',
-            'voice_oohs',
-            'vibraphone',
-            'xylophone'
-        ]
-    });
-    const sf = new rpgen4.SoundFont();
-    let nowFont = null;
-    selectFont.elm.on('change', async () => {
-        const v = selectFont();
-        if(v === notSelected || v === nowFont) return;
-        nowFont = v;
-        selectFont.elm.prop('disabled', true);
-        await sf.load(v, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${v}-mp3.js`);
-        selectFont.elm.prop('disabled', false);
-    });
     const hideTime = 500;
     const addHideArea = (label, parentNode = main) => {
         const html = $('<div>').addClass('container').appendTo(parentNode);
@@ -85,6 +50,62 @@
             }
         });
     };
+    const sf = new rpgen4.SoundFont(),
+          notSelected = 'not selected';
+    {
+        const {html} = addHideArea('load SoundFont');
+        const selectFont = rpgen3.addSelect(html, {
+            label: 'SoundFont',
+            list: [
+                notSelected,
+                'acoustic_grand_piano',
+                'acoustic_guitar_nylon',
+                'acoustic_guitar_steel',
+                'bassoon',
+                'cello',
+                'church_organ',
+                'clarinet',
+                'flute',
+                'fx_1_rain',
+                'kalimba',
+                'koto',
+                'music_box',
+                'oboe',
+                'trombone',
+                'violin',
+                'voice_oohs',
+                'vibraphone',
+                'xylophone'
+            ]
+        });
+        let nowFont = null;
+        selectFont.elm.on('change', () => {
+            const v = selectFont();
+            if(v === notSelected || v === nowFont) return;
+            nowFont = v;
+            loadSF(v);
+        });
+        const input = rpgen3.addInputStr(html, {
+            label: 'search SoundFont',
+            save: true
+        });
+        const dd = $('<dd>').appendTo(html);
+        rpgen3.addBtn(html, 'search', () => {
+            loadSF(input());
+        }).addClass('btn');
+        const loadSF = async fontName => {
+            const e = selectFont.elm.add(input.elm);
+            e.prop('disabled', true);
+            try {
+                await sf.load(fontName, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`);
+                dd.text('success loading');
+            }
+            catch {
+                dd.text('failed loading');
+            }
+            e.prop('disabled', false);
+        };
+    }
     {
         const {html} = addHideArea('check code');
         const selectOctave = rpgen3.addSelect(html, {
@@ -115,6 +136,7 @@
             list: (max => [...Array(max * 2 + 1).keys()].map(v => v - max))(Math.max(...Object.values(rpgen4.chord).map(v => v.length))),
             value: 0
         });
+        $('<dd>').appendTo(html);
         rpgen3.addBtn(html, 'play', () => playChord(selectKey() + selectOctave(), selectChord(), selectInversion())).addClass('btn');
     }
     const playChord = (note, chord, inversion) => {
@@ -165,7 +187,9 @@
             type: 'file',
             accept: '.mid'
         }).get(0), v => parseMidi(v));
+        $('<dd>').appendTo(html);
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
+        $('<dd>').appendTo(html);
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
     }
     const parsedMidi = new Map;
