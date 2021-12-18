@@ -1,7 +1,6 @@
-// https://github.com/gleitz/midi-js-soundfonts
 import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
 import {flat2sharp} from 'https://rpgen3.github.io/chord/mjs/flat2sharp.mjs';
-export const soundFont = new class {
+export class SoundFont {
     constructor(){
         this.loaded = new Set;
         this.bufs = new Map;
@@ -10,7 +9,7 @@ export const soundFont = new class {
     init(){ // must done after user gesture
         if(!this.ctx) this.ctx = new AudioContext();
     }
-    async load(fontName, url){
+    async load(fontName, url){ // https://github.com/gleitz/midi-js-soundfonts
         this.init();
         const {loaded, bufs, ctx} = this;
         if(!loaded.has(url)) {
