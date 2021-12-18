@@ -13,6 +13,7 @@ export class SoundFont {
         const {ctx, bufs} = this,
               {Soundfont} = window.MIDI;
         if(!(fontName in Soundfont)) await getScript(url);
+        if(!(fontName in Soundfont)) throw `${fontName} is not found`;
         bufs.clear();
         for(const v of (
             await Promise.all(Object.entries(Soundfont[fontName]).map(async ([k, v]) => {
