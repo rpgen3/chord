@@ -1,5 +1,5 @@
 // https://qiita.com/optimisuke/items/f1434d4a46afd667adc6
-class Record {
+export class Record {
     constructor(ctx){
         this.bufferSize = 1024;
         this.node = ctx.createScriptProcessor(this.bufferSize, 1, 1);
