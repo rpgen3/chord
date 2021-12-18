@@ -6,10 +6,13 @@ export class Record {
         this.node.onaudioprocess = e => this.process(e);
         this.sampleRate = ctx.sampleRate;
         this.bufs = [];
-        this.stop = false;
+        this.closed = false;
+    }
+    close(){
+        this.closed = true;
     }
     process(e){
-        if(this.stop) return;
+        if(this.closed) return;
         const {bufferSize} = this,
               {inputBuffer, outputBuffer} = e,
               buf = inputBuffer.getChannelData(0);
