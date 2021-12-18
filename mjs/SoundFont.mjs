@@ -12,7 +12,7 @@ export class SoundFont {
         this.init();
         const {ctx, bufs} = this;
         if(!(fontName in window.MIDI?.Soundfont)) await getScript(url);
-        const {SoundFont} = window.MIDI;
+        const {Soundfont} = window.MIDI;
         if(!(fontName in Soundfont)) throw `${fontName} is not found`;
         bufs.clear();
         for(const v of (
