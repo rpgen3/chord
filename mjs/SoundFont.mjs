@@ -4,6 +4,7 @@ export class SoundFont {
     constructor(){
         this.ctx = null;
         this.bufs = new Map;
+        this.anyNode = null;
         if(!('MIDI' in window)) window.MIDI = {};
         if(!('Soundfont' in window.MIDI)) window.MIDI.Soundfont = {};
     }
@@ -36,6 +37,7 @@ export class SoundFont {
         gain.gain.value = volume;
         gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + Math.min(buf.duration, duration * 2));
         src.connect(gain).connect(ctx.destination);
+        if(this.anyNode) gain.connect(this.anyNode);
         src.start();
     }
     async stop(){
