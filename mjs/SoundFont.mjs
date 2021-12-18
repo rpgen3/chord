@@ -36,8 +36,8 @@ export class SoundFont {
         src.buffer = buf;
         gain.gain.value = volume;
         gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + Math.min(buf.duration, duration * 2));
-        src.connect(gain).connect(ctx.destination);
-        if(this.anyNode) gain.connect(this.anyNode);
+        if(this.anyNode) src.connect(gain).connect(this.anyNode).connect(ctx.destination);
+        else src.connect(gain).connect(ctx.destination);
         src.start();
     }
     async stop(){
