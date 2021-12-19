@@ -4,6 +4,7 @@ export class Record {
         this.bufferSize = 1024;
         this.node = ctx.createScriptProcessor(this.bufferSize, 1, 1);
         this.node.onaudioprocess = e => this.process(e);
+        this.sampleRate = ctx.sampleRate;
         this.bufs = [];
         this.closed = false;
     }
