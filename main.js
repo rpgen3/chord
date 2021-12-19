@@ -100,6 +100,7 @@
         const loadSF = async fontName => {
             const e = selectFont.elm.add(input.elm).add(btn);
             e.prop('disabled', true);
+            dd.text('now loading');
             try {
                 await sf.load(fontName, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`);
                 dd.text('success loading');
