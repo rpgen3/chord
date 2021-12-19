@@ -1,6 +1,6 @@
 // https://qiita.com/optimisuke/items/f1434d4a46afd667adc6
-export const toWAV = (bufs, sampleRate) => {
-    const dataview = makeFile(mergeBuffers(bufs), sampleRate),
+export const toWAV = ({bufs, ch, sampleRate}) => {
+    const dataview = makeFile(mergeBuffers(bufs), ch, sampleRate),
           blob = new Blob([dataview], {type:'audio/wav'});
     return URL.createObjectURL(blob);
 };
@@ -19,7 +19,8 @@ const mergeBuffers = bufs => {
     }
     return samples;
 };
-const makeFile = (samples, sampleRate) => {
+// http://ryuz.my.coocan.jp/programing/wavefmt.html
+const makeFile = (samples, ch, sampleRate) => {
     const buffer = new ArrayBuffer(44 + samples.length * 2),
           view = new DataView(buffer);
     writeString(view, 0, 'RIFF'); // RIFFヘッダ
@@ -28,7 +29,7 @@ const makeFile = (samples, sampleRate) => {
     writeString(view, 12, 'fmt '); // fmtチャンク
     view.setUint32(16, 16, true); // fmtチャンクのバイト数
     view.setUint16(20, 1, true); // フォーマットID
-    view.setUint16(22, 1, true); // チャンネル数
+    view.setUint16(22, ch, true); // チャンネル数
     view.setUint32(24, sampleRate, true); // サンプリングレート
     view.setUint32(28, sampleRate * 2, true); // データ速度
     view.setUint16(32, 2, true); // ブロックサイズ
