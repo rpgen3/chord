@@ -26,7 +26,7 @@ export class SoundFont {
                       buf = await res.arrayBuffer(),
                       _buf = await ctx.decodeAudioData(buf),
                       {numberOfChannels} = _buf;
-                if(this.ch > numberOfChannels) this.ch = numberOfChannels;
+                if(this.ch < numberOfChannels) this.ch = numberOfChannels;
                 return [flat2sharp(k), _buf];
             }))
         )) bufs.set(...v);
