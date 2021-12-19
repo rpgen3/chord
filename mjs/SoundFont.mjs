@@ -4,6 +4,7 @@ export class SoundFont {
     constructor(){
         this.ctx = null;
         this.bufs = new Map;
+        this.ch = -1;
         this.anyNode = null;
         if(!('MIDI' in window)) window.MIDI = {};
         if(!('Soundfont' in window.MIDI)) window.MIDI.Soundfont = {};
@@ -18,11 +19,14 @@ export class SoundFont {
         if(!(fontName in Soundfont)) await getScript(url);
         if(!(fontName in Soundfont)) throw `${fontName} is not found`;
         bufs.clear();
+        this.ch = -1;
         for(const v of (
             await Promise.all(Object.entries(Soundfont[fontName]).map(async ([k, v]) => {
                 const res = await fetch(v),
                       buf = await res.arrayBuffer(),
-                      _buf = await ctx.decodeAudioData(buf);
+                      _buf = await ctx.decodeAudioData(buf),
+                      {numberOfChannels} = _buf;
+                if(this.ch > numberOfChannels) this.ch = numberOfChannels;
                 return [flat2sharp(k), _buf];
             }))
         )) bufs.set(...v);
