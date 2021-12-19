@@ -28,7 +28,8 @@
             'chord',
             'inversion',
             'SoundFont',
-            'Record'
+            'Record',
+            'toWAV'
         ].map(v => `https://rpgen3.github.io/chord/mjs/${v}.mjs`)
     ].flat());
     [
@@ -298,7 +299,7 @@
         const {html} = addHideArea('record play');
         let rec = null;
         rpgen3.addBtn(html, 'download', () => {
-            rpgen3.download(rec.toWAV(), 'chord.wav');
+            rpgen3.download(rpgen4.toWAV(rec.bufs, rec.sampleRate), 'chord.wav');
         }).addClass('btn');
         const isRecord = rpgen3.addInputBool(html, {
             label: 'start record'
