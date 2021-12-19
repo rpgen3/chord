@@ -1,8 +1,8 @@
 // https://qiita.com/optimisuke/items/f1434d4a46afd667adc6
 export class Record {
-    constructor(ctx, ch = 2, bufferSize = 0){
+    constructor({ctx, ch = 2, bufSize = 0}){
         this.ch = ch;
-        this.node = ctx.createScriptProcessor(bufferSize, ch, ch);
+        this.node = ctx.createScriptProcessor(bufSize, ch, ch);
         this.node.onaudioprocess = e => this.process(e);
         this.sampleRate = ctx.sampleRate;
         this.bufs = [];
