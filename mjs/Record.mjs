@@ -1,8 +1,8 @@
 // https://qiita.com/optimisuke/items/f1434d4a46afd667adc6
 export class Record {
-    constructor(ctx){
-        this.bufferSize = 1024;
-        this.node = ctx.createScriptProcessor(this.bufferSize, 1, 1);
+    constructor(ctx, ch = 2, bufferSize = 0){
+        this.ch = ch;
+        this.node = ctx.createScriptProcessor(bufferSize, ch, ch);
         this.node.onaudioprocess = e => this.process(e);
         this.sampleRate = ctx.sampleRate;
         this.bufs = [];
@@ -13,9 +13,11 @@ export class Record {
     }
     process({inputBuffer, outputBuffer}){
         if(this.closed) return;
-        const {bufferSize} = this,
-              buf = inputBuffer.getChannelData(0);
-        this.bufs.push(buf.slice());
-        outputBuffer.getChannelData(0).set(buf);
+        const {channelCount} = this.node;
+        for(let i = 0; i < channelCount; i++) {
+            const buf = inputBuffer.getChannelData(i);
+            this.bufs.push(buf.slice());
+            outputBuffer.getChannelData(i).set(buf);
+        }
     }
 }
