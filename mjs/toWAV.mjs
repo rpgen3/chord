@@ -19,7 +19,7 @@ const mergeBuffers = bufs => {
     }
     return samples;
 };
-// http://ryuz.my.coocan.jp/programing/wavefmt.html
+// https://www.wdic.org/w/TECH/WAV
 const makeFile = (samples, ch, sampleRate) => {
     const buffer = new ArrayBuffer(44 + samples.length * 2),
           view = new DataView(buffer);
@@ -31,8 +31,8 @@ const makeFile = (samples, ch, sampleRate) => {
     view.setUint16(20, 1, true); // フォーマットID
     view.setUint16(22, ch, true); // チャンネル数
     view.setUint32(24, sampleRate, true); // サンプリングレート
-    view.setUint32(28, sampleRate * 2, true); // データ速度
-    view.setUint16(32, 2, true); // ブロックサイズ
+    view.setUint32(28, sampleRate * 2 * ch, true); // データ速度
+    view.setUint16(32, 2 * ch, true); // ブロックサイズ
     view.setUint16(34, 16, true); // サンプルあたりのビット数
     writeString(view, 36, 'data'); // dataチャンク
     view.setUint32(40, samples.length * 2, true); // 波形データのバイト数
