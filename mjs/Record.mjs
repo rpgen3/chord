@@ -11,10 +11,9 @@ export class Record {
     close(){
         this.closed = true;
     }
-    process(e){
+    process({inputBuffer, outputBuffer}){
         if(this.closed) return;
         const {bufferSize} = this,
-              {inputBuffer, outputBuffer} = e,
               buf = inputBuffer.getChannelData(0);
         this.bufs.push(buf.slice());
         outputBuffer.getChannelData(0).set(buf);
