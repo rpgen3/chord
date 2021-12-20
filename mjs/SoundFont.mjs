@@ -25,7 +25,7 @@ export class SoundFont {
         this.bufs.clear();
         this.ch = -1;
         for(const v of (
-            await Promise.all(Object.entries(Soundfont[fontName]).map(async ([k, v]) => {
+            await Promise.all(Object.entries(window.MIDI.Soundfont[fontName]).map(async ([k, v]) => {
                 const res = await fetch(v),
                       buf = await res.arrayBuffer(),
                       _buf = await SoundFont.ctx.decodeAudioData(buf),
