@@ -107,6 +107,7 @@
             loadSF(input());
         }).addClass('btn');
         const loadSF = async fontName => {
+            if(!SoundFont.ctx) SoundFont.init();
             const e = selectFont.elm.add(input.elm).add(btn);
             e.prop('disabled', true);
             dd.text('now loading');
@@ -213,7 +214,7 @@
     let parsedMidiKeys = null,
         intervalId = -1;
     const playMidi = async () => {
-        await stopMidi();
+        stopMidi();
         await record.init();
         parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now() - parsedMidiKeys[0] + 500;
@@ -222,9 +223,9 @@
         nowIndex = 0;
         intervalId = setInterval(update);
     };
-    const stopMidi = async () => {
+    const stopMidi = () => {
         clearInterval(intervalId);
-        await sf.stop();
+        SoundFont.stop();
     };
     let startTime = 0,
         endTime = 0,
@@ -257,8 +258,8 @@
         if(bpm) return bpm;
         else throw 'BPM is none.';
     };
-    const parseMidi = async midi => { // note, volume, duration
-        await stopMidi();
+    const parseMidi = midi => { // note, volume, duration
+        stopMidi();
         parsedMidi.clear();
         const {track, timeDivision} = midi,
               heap = new rpgen4.Heap();
@@ -309,15 +310,15 @@
         const {html} = addHideArea('record play');
         let rec = null;
         rpgen3.addBtn(html, 'download', () => {
-            rpgen3.download(rpgen4.toWAV(rec.data, sf.ctx.sampleRate), 'chord.wav');
+            rpgen3.download(rpgen4.toWAV(rec.data, SoundFont.ctx.sampleRate), 'chord.wav');
         }).addClass('btn');
         const isRecord = rpgen3.addInputBool(html, {
             label: 'start record'
         });
         const init = async () => {
             if(!isRecord()) return true;
-            rec = new rpgen4.Record(sf.ctx, sf.ch);
-            sf.anyNode = rec.node;
+            rec = new rpgen4.Record(SoundFont.ctx, sf.ch);
+            SoundFont.anyNode = rec.node;
             /*await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
             rec = new AudioWorkletNode(ctx, 'record', {
                 channelCount: 1,
@@ -332,7 +333,7 @@
         isRecord.elm.on('change', async () => {
             if(await init()) {
                 close();
-                sf.anyNode = null;
+                SoundFont.anyNode = null;
             }
         });
     }
