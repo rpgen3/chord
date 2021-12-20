@@ -18,7 +18,7 @@ export class SoundFont {
         this.isDrum = isDrum;
         this.bufs = new Map;
         this.ch = -1;
-        this.min = 1 / 8; // demiquaver length in 120 BPM
+        this.min = 1 / 4;
     }
     async load(fontName, url){ // https://github.com/gleitz/midi-js-soundfonts
         await SoundFont.load(fontName, url);
@@ -35,7 +35,7 @@ export class SoundFont {
             }))
         )) this.bufs.set(...v);
     }
-    play(note = 'C4', volume = 1.0, duration = this.min * 4){
+    play(note = 'C4', volume = 1.0, duration = 0.5){
         if(!this.bufs.has(note)) return;
         const buf = this.bufs.get(note),
               {ctx, anyNode} = SoundFont,
