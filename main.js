@@ -225,7 +225,7 @@
     };
     const stopMidi = () => {
         clearInterval(intervalId);
-        SoundFont.stop();
+        SoundFont.init();
     };
     let startTime = 0,
         endTime = 0,
