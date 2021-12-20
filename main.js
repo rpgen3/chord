@@ -309,14 +309,14 @@
         const {html} = addHideArea('record play');
         let rec = null;
         rpgen3.addBtn(html, 'download', () => {
-            rpgen3.download(rpgen4.toWAV(rec), 'chord.wav');
+            rpgen3.download(rpgen4.toWAV(rec.data, sf.ctx.sampleRate), 'chord.wav');
         }).addClass('btn');
         const isRecord = rpgen3.addInputBool(html, {
             label: 'start record'
         });
         const init = async () => {
             if(!isRecord()) return true;
-            rec = new rpgen4.Record(sf);
+            rec = new rpgen4.Record(sf.ctx, sf.ch);
             sf.anyNode = rec.node;
             /*await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
             rec = new AudioWorkletNode(ctx, 'record', {
