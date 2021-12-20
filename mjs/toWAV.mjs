@@ -1,21 +1,20 @@
 // https://qiita.com/optimisuke/items/f1434d4a46afd667adc6
 export const toWAV = (data, sampleRate) => {
-    const dataView = makeFile(mergeBuffers(data), data.length, sampleRate),
-          blob = new Blob([dataView], {type:'audio/wav'});
+    const view = makeFile(mergeBuf(data), data.length, sampleRate),
+          blob = new Blob([view], {type:'audio/wav'});
     return URL.createObjectURL(blob);
 };
-const mergeBuffers = data => {
+const mergeBuf = data => {
     const ch = data.length,
           len = data[0].length,
-          unit = data[0][0].length,
-          a = new Float32Array(ch * len * unit);
-    for (let i = 0; i < ch; i++) for (let j = 0; j < len; j++) a.set(data[i][j], i * unit + j * len);
+          bufSize = data[0][0].length,
+          a = new Float32Array(ch * len * bufSize);
+    for (let i = 0; i < ch; i++) for (let j = 0; j < len; j++) a.set(data[i][j], (i + j * ch) * bufSize);
     return a;
 };
 // https://www.wdic.org/w/TECH/WAV
 const makeFile = (a, ch, sampleRate) => {
-    const buffer = new ArrayBuffer(44 + a.length * 2),
-          view = new DataView(buffer);
+    const view = new DataView(new ArrayBuffer(44 + a.length * 2));
     writeString(view, 0, 'RIFF'); // RIFFヘッダ
     view.setUint32(4, 32 + a.length * 2, true); // これ以降のファイルサイズ
     writeString(view, 8, 'WAVE'); // WAVEヘッダ
