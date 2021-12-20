@@ -18,7 +18,7 @@ export class SoundFont {
         this.isDrum = isDrum;
         this.bufs = new Map;
         this.ch = -1;
-        this.min = 1 / 4;
+        this.min = 0.25;
     }
     async load(fontName, url){ // https://github.com/gleitz/midi-js-soundfonts
         await SoundFont.load(fontName, url);
