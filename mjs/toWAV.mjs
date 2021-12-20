@@ -1,6 +1,7 @@
 // https://qiita.com/optimisuke/items/f1434d4a46afd667adc6
-export const toWAV = ({bufs, ch, sampleRate}) => {
-    const dataview = makeFile(mergeBuffers(bufs), ch, sampleRate),
+export const toWAV = (data, sampleRate) => {
+    const ch = data.length,
+          dataview = makeFile(mergeBuffers(data), ch, sampleRate),
           blob = new Blob([dataview], {type:'audio/wav'});
     return URL.createObjectURL(blob);
 };
