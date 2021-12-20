@@ -1,53 +1,52 @@
 import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
 import {flat2sharp} from 'https://rpgen3.github.io/chord/mjs/flat2sharp.mjs';
+if(!('MIDI' in window)) window.MIDI = {};
+if(!('Soundfont' in window.MIDI)) window.MIDI.Soundfont = {};
 export class SoundFont {
-    #min = 1 / 8; // demiquaver length in 120 BPM
-    constructor(){
-        this.ctx = null;
+    static ctx = null;
+    static anyNode = null;
+    static init(){ // must done after user gesture
+        this.ctx?.close();
+        this.ctx = new AudioContext();
+    }
+    static async load(fontName, url){
+        const {Soundfont} = window.MIDI;
+        if(!(fontName in Soundfont)) await getScript(url);
+        if(!(fontName in Soundfont)) throw 'SoundFont is not found.';
+    }
+    constructor(isDrum = false){
+        this.isDrum = isDrum;
         this.bufs = new Map;
         this.ch = -1;
-        this.anyNode = null;
-        if(!('MIDI' in window)) window.MIDI = {};
-        if(!('Soundfont' in window.MIDI)) window.MIDI.Soundfont = {};
-    }
-    init(){ // must done after user gesture
-        if(!this.ctx) this.ctx = new AudioContext();
+        this.min = 1 / 8; // demiquaver length in 120 BPM
     }
     async load(fontName, url){ // https://github.com/gleitz/midi-js-soundfonts
-        this.init();
-        const {ctx, bufs} = this,
-              {Soundfont} = window.MIDI;
-        if(!(fontName in Soundfont)) await getScript(url);
-        if(!(fontName in Soundfont)) throw `${fontName} is not found`;
-        bufs.clear();
+        await SoundFont.load(fontName, url);
+        this.bufs.clear();
         this.ch = -1;
         for(const v of (
             await Promise.all(Object.entries(Soundfont[fontName]).map(async ([k, v]) => {
                 const res = await fetch(v),
                       buf = await res.arrayBuffer(),
-                      _buf = await ctx.decodeAudioData(buf),
+                      _buf = await SoundFont.ctx.decodeAudioData(buf),
                       {numberOfChannels} = _buf;
                 if(this.ch < numberOfChannels) this.ch = numberOfChannels;
                 return [flat2sharp(k), _buf];
             }))
-        )) bufs.set(...v);
+        )) this.bufs.set(...v);
     }
-    play(note = 'C4', volume = 1.0, duration = this.#min * 4){
-        const {ctx, bufs} = this;
-        if(!bufs.has(note)) return;
-        const buf = bufs.get(note),
+    play(note = 'C4', volume = 1.0, duration = this.min * 4){
+        if(!this.bufs.has(note)) return;
+        const buf = this.bufs.get(note),
+              {ctx, anyNode} = SoundFont,
               src = ctx.createBufferSource(),
-              gain = ctx.createGain();
+              g = ctx.createGain();
         src.buffer = buf;
-        gain.gain.value = volume;
-        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + Math.min(buf.duration, Math.max(this.#min, duration)));
-        if(this.anyNode) src.connect(gain).connect(this.anyNode).connect(ctx.destination);
-        else src.connect(gain).connect(ctx.destination);
+        g.gain.value = volume;
+        if(!this.isDrum) g.gain.linearRampToValueAtTime(0, ctx.currentTime + Math.min(buf.duration, Math.max(this.min, duration)));
+        src.connect(g);
+        if(anyNode) g.connect(anyNode).connect(ctx.destination);
+        else g.connect(ctx.destination);
         src.start();
     }
-    async stop(){
-        await this.ctx?.close();
-        this.ctx = null;
-        this.init();
-    }
-};
+}
