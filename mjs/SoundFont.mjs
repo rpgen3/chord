@@ -1,6 +1,7 @@
 import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
 import {flat2sharp} from 'https://rpgen3.github.io/chord/mjs/flat2sharp.mjs';
 export class SoundFont {
+    #min = 0.5; // eighth note length
     constructor(){
         this.ctx = null;
         this.bufs = new Map;
@@ -31,7 +32,7 @@ export class SoundFont {
             }))
         )) bufs.set(...v);
     }
-    play(note = 'C4', volume = 1.0, duration = 0.5){
+    play(note = 'C4', volume = 1.0, duration = 0){
         const {ctx, bufs} = this;
         if(!bufs.has(note)) return;
         const buf = bufs.get(note),
@@ -39,7 +40,7 @@ export class SoundFont {
               gain = ctx.createGain();
         src.buffer = buf;
         gain.gain.value = volume;
-        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + Math.min(buf.duration, duration * 2));
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + Math.min(buf.duration, Math.max(this.#min, duration)));
         if(this.anyNode) src.connect(gain).connect(this.anyNode).connect(ctx.destination);
         else src.connect(gain).connect(ctx.destination);
         src.start();
