@@ -52,7 +52,8 @@
             }
         });
     };
-    const sf = new rpgen4.SoundFont(),
+    const {SoundFont} = rpgen4,
+          sf = new SoundFont(),
           notSelected = 'not selected';
     {
         const {html} = addHideArea('load SoundFont');
