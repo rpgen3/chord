@@ -1,31 +1,23 @@
 // https://qiita.com/optimisuke/items/f1434d4a46afd667adc6
 export const toWAV = (data, sampleRate) => {
-    const ch = data.length,
-          dataview = makeFile(mergeBuffers(data), ch, sampleRate),
-          blob = new Blob([dataview], {type:'audio/wav'});
+    const dataView = makeFile(mergeBuffers(data), data.length, sampleRate),
+          blob = new Blob([dataView], {type:'audio/wav'});
     return URL.createObjectURL(blob);
 };
-const mergeBuffers = bufs => {
-    let sampleLength = 0;
-    for (let i = 0; i < bufs.length; i++) {
-        sampleLength += bufs[i].length;
-    }
-    const samples = new Float32Array(sampleLength);
-    let sampleIdx = 0;
-    for (let i = 0; i < bufs.length; i++) {
-        for (let j = 0; j < bufs[i].length; j++) {
-            samples[sampleIdx] = bufs[i][j];
-            sampleIdx++;
-        }
-    }
-    return samples;
+const mergeBuffers = data => {
+    const ch = data.length,
+          len = data[0].length,
+          unit = data[0][0].length,
+          a = new Float32Array(ch * len * unit);
+    for (let i = 0; i < ch; i++) for (let j = 0; j < len; j++) a.set(data[i][j], i * unit + j * len);
+    return a;
 };
 // https://www.wdic.org/w/TECH/WAV
-const makeFile = (samples, ch, sampleRate) => {
-    const buffer = new ArrayBuffer(44 + samples.length * 2),
+const makeFile = (a, ch, sampleRate) => {
+    const buffer = new ArrayBuffer(44 + a.length * 2),
           view = new DataView(buffer);
     writeString(view, 0, 'RIFF'); // RIFFヘッダ
-    view.setUint32(4, 32 + samples.length * 2, true); // これ以降のファイルサイズ
+    view.setUint32(4, 32 + a.length * 2, true); // これ以降のファイルサイズ
     writeString(view, 8, 'WAVE'); // WAVEヘッダ
     writeString(view, 12, 'fmt '); // fmtチャンク
     view.setUint32(16, 16, true); // fmtチャンクのバイト数
@@ -36,8 +28,8 @@ const makeFile = (samples, ch, sampleRate) => {
     view.setUint16(32, 2 * ch, true); // ブロックサイズ
     view.setUint16(34, 16, true); // サンプルあたりのビット数
     writeString(view, 36, 'data'); // dataチャンク
-    view.setUint32(40, samples.length * 2, true); // 波形データのバイト数
-    floatTo16BitPCM(view, 44, samples); // 波形データ
+    view.setUint32(40, a.length * 2, true); // 波形データのバイト数
+    floatTo16BitPCM(view, 44, a); // 波形データ
     return view;
 };
 const writeString = (view, offset, string) => {
