@@ -36,6 +36,17 @@
         'container',
         'btn'
     ].map(v => `https://rpgen3.github.io/spatialFilter/css/${v}.css`).map(rpgen3.addCSS);
+    const g_list = await (async () => {
+        const keys = [
+            'fontName',
+            'midi'
+        ];
+        const list = {};
+        for(const [i, v] of (await Promise.all(
+            keys.map(v => fetch(`https://rpgen3.github.io/chord/list/${v}.txt`).then(v => v.text()))
+        )).entries()) list[keys[i]] = v.trim().split('\n');
+        return list;
+    })();
     const hideTime = 500;
     const addHideArea = (label, parentNode = main) => {
         const html = $('<div>').addClass('container').appendTo(parentNode);
@@ -61,33 +72,7 @@
             label: 'select SoundFont',
             list: [
                 notSelected,
-                'acoustic_grand_piano',
-                'acoustic_guitar_nylon',
-                'acoustic_guitar_steel',
-                'bassoon',
-                'cello',
-                'church_organ',
-                'clarinet',
-                'flute',
-                'fx_1_rain',
-                'harmonica',
-                'kalimba',
-                'koto',
-                'music_box',
-                'oboe',
-                'orchestra_hit',
-                'orchestral_harp',
-                'piccolo',
-                'recorder',
-                'shakuhachi',
-                'shamisen',
-                'shanai',
-                'sitar',
-                'trombone',
-                'violin',
-                'voice_oohs',
-                'vibraphone',
-                'xylophone'
+                ...g_list.fontName
             ]
         });
         let nowFont = null;
@@ -168,28 +153,10 @@
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
             label: 'sample',
-            list: {
-                [notSelected]: notSelected,
-                '厄神様の通り道': 'bnAh4QP',
-                '竹取飛翔': 'r6YykIX',
-                'a': '4BRC0W1',
-                'マグロ': '4N3OZkS',
-                'U.N.オーエンは彼女なのか？': 'ORWqjdj',
-                '明治十七年の上海アリス': 'jTyK9wz',
-                '華のさかづき大江山': '31Unddb',
-                '時代親父とハイカラ少女': 'yct204E',
-                '永遠の春夢': 'aAlch5g',
-                'ヤツメ穴': '691a8Mz',
-                'クラゲ': 'LWh7Tn3',
-                '!': 'Ak68REb',
-                'i': 'lqvQCiu',
-                '...': 'qv8HpjG',
-                'あさやけもゆうやけもないんだ': 'LyUEhJl',
-                '海鬼月': '8bsTZIp',
-                'calcite': 'xrKFzUC',
-                'あねもねぐりっち': 'uAigio7',
-                'かるみあどーるず': '4t8zrav'
-            }
+            list: [
+                Array(2).fill(notSelected),
+                ...g_list.midi.map(v => v.split(' ').reverse())
+            ]
         });
         let nowMidi = null;
         selectMidi.elm.on('change', async () => {
@@ -322,7 +289,13 @@
         const inputCh = rpgen3.addSelect(html, {
             label: 'channel',
             save: true,
-            list: [notSelected, 1, 2, 3, 4]
+            list: {
+                [notSelected]: notSelected,
+                'monaural ch1': 1,
+                'stereo ch2': 2,
+                'stereo ch3': 3,
+                'stereo ch4': 4
+            }
         });
         const inputBitRate = rpgen3.addSelect(html, {
             label: 'bitRate',
