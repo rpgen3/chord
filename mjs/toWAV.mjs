@@ -39,7 +39,7 @@ const writeString = (view, offset, string) => {
     }
 };
 const float2PCM = (output, offset, input, bitRate) => {
-    const step = 32 / bitRate;
+    const step = bitRate / 8;
     for (let i = 0; i < input.length; i++ , offset += step) {
         const s = Math.max(-1, Math.min(1, input[i]));
         switch(bitRate) {
