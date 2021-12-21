@@ -9,15 +9,15 @@ const mergeData = data => {
     const ch = data.length,
           len = data[0].length,
           bufSize = data[0][0].length,
-          arr = new Float32Array(ch * len * bufSize);
-    for (let i = 0; i < ch; i++) for (let j = 0; j < len; j++) arr.set(data[i][j], (i + j * ch) * bufSize);
-    return arr;
+          wave = new Float32Array(ch * len * bufSize);
+    for (let i = 0; i < ch; i++) for (let j = 0; j < len; j++) wave.set(data[i][j], (i + j * ch) * bufSize);
+    return wave;
 };
 // https://www.wdic.org/w/TECH/WAV
-const makeFile = (arr, ch, sampleRate, bitRate) => {
+const makeFile = (wave, ch, sampleRate, bitRate) => {
     const step = bitRate / 8,
           blockSize = ch * step,
-          len = arr.length * step,
+          len = wave.length * step,
           view = new DataView(new ArrayBuffer(44 + len));
     writeString(view, 0, 'RIFF'); // RIFFヘッダ
     view.setUint32(4, 32 + len, true); // これ以降のファイルサイズ
@@ -32,7 +32,7 @@ const makeFile = (arr, ch, sampleRate, bitRate) => {
     view.setUint16(34, bitRate, true); // サンプルあたりのビット数
     writeString(view, 36, 'data'); // dataチャンク
     view.setUint32(40, len, true); // 波形データのバイト数
-    float2pcm(view, 44, arr, step); // 波形データ
+    float2pcm(view, 44, wave, step); // 波形データ
     return view;
 };
 const writeString = (view, offset, string) => {
@@ -40,9 +40,9 @@ const writeString = (view, offset, string) => {
         view.setUint8(offset + i, string.charCodeAt(i));
     }
 };
-const float2pcm = (view, offset, arr, step) => {
+const float2pcm = (view, offset, wave, step) => {
     const f = [pcm8, pcm16, pcm24, pcm32][step - 1];
-    for (let i = 0; i < arr.length; i++ , offset += step) f(view, offset, arr[i]);
+    for (let i = 0; i < wave.length; i++ , offset += step) f(view, offset, wave[i]);
 };
 // https://github.com/mohayonao/wav-encoder/blob/master/index.js
 const clamp = (num, min, max) => Math.max(min, Math.min(max, num)),
