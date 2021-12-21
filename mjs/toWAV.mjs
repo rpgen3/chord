@@ -23,10 +23,10 @@ const makeFile = (wave, ch, sampleRate, bitRate) => {
           blockSize = ch * step,
           len = wave.length * step,
           view = new DataView(new ArrayBuffer(44 + len));
-    writeString(view, 0, 'RIFF'); // RIFFヘッダ
+    writeStr(view, 0, 'RIFF'); // RIFFヘッダ
     view.setUint32(4, 32 + len, true); // これ以降のファイルサイズ
-    writeString(view, 8, 'WAVE'); // WAVEヘッダ
-    writeString(view, 12, 'fmt '); // fmtチャンク
+    writeStr(view, 8, 'WAVE'); // WAVEヘッダ
+    writeStr(view, 12, 'fmt '); // fmtチャンク
     view.setUint32(16, 16, true); // fmtチャンクのバイト数
     view.setUint16(20, 1, true); // フォーマットID
     view.setUint16(22, ch, true); // チャンネル数
@@ -34,13 +34,13 @@ const makeFile = (wave, ch, sampleRate, bitRate) => {
     view.setUint32(28, sampleRate * blockSize, true); // データ速度
     view.setUint16(32, blockSize, true); // ブロックサイズ
     view.setUint16(34, bitRate, true); // サンプルあたりのビット数
-    writeString(view, 36, 'data'); // dataチャンク
+    writeStr(view, 36, 'data'); // dataチャンク
     view.setUint32(40, len, true); // 波形データのバイト数
     float2pcm(view, 44, wave, step); // 波形データ
     return view;
 };
-const writeString = (view, offset, string) => {
-    for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
+const writeStr = (view, offset, str) => {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
 };
 const float2pcm = (view, offset, wave, step) => {
     const f = [pcm8, pcm16, pcm24, pcm32][step - 1];
