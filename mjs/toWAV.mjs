@@ -2,15 +2,19 @@
 export const toWAV = ({data, sampleRate, bitRate = 16}) => {
     if(![8, 16, 24, 32].includes(bitRate)) throw 'BitRate must be 8 or 16 or 24 or 32.';
     const view = makeFile(mergeData(data), data.length, sampleRate, bitRate),
-          blob = new Blob([view], {type:'audio/wav'});
+          blob = new Blob([view], {type: 'audio/wav'});
     return URL.createObjectURL(blob);
 };
 const mergeData = data => {
     const ch = data.length,
           len = data[0].length,
           bufSize = data[0][0].length,
-          wave = new Float32Array(ch * len * bufSize);
-    for (let i = 0; i < ch; i++) for (let j = 0; j < len; j++) wave.set(data[i][j], (i + j * ch) * bufSize);
+          _len = len * bufSize,
+          _data = [...Array(ch).fill(new Float32Array(_len))];
+    for (let i = 0; i < ch; i++) for (let j = 0; j < len; j++) _data[i].set(data[i][j], j * bufSize);
+    const wave = new Float32Array(ch * _len),
+          step = 1024;
+    for (let j = 0; j < _len; j += step) for (let i = 0; i < ch; i++) wave.set(_data[i].subarray(j, j + step), (j * ch + i) * step);
     return wave;
 };
 // https://www.wdic.org/w/TECH/WAV
@@ -36,9 +40,7 @@ const makeFile = (wave, ch, sampleRate, bitRate) => {
     return view;
 };
 const writeString = (view, offset, string) => {
-    for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-    }
+    for (let i = 0; i < string.length; i++) view.setUint8(offset + i, string.charCodeAt(i));
 };
 const float2pcm = (view, offset, wave, step) => {
     const f = [pcm8, pcm16, pcm24, pcm32][step - 1];
@@ -47,7 +49,7 @@ const float2pcm = (view, offset, wave, step) => {
 // https://github.com/mohayonao/wav-encoder/blob/master/index.js
 const clamp = (num, min, max) => Math.max(min, Math.min(max, num)),
       float2int = (value, range) => clamp(Math.round(value * range), -range, range - 1),
-      pcm8 = (view, offset, value) => view.setUint8(offset, float2int(value, 0x80) + 0x80, true),
+      pcm8 = (view, offset, value) => view.setUint8(offset, float2int(value, 0x80) + 0x80),
       pcm16 = (view, offset, value) => view.setInt16(offset, float2int(value, 0x8000), true),
       pcm32 = (view, offset, value) => view.setInt32(offset, float2int(value, 0x80000000), true);
 const pcm24 = (view, offset, value) => {
