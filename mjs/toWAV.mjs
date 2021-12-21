@@ -14,7 +14,7 @@ const mergeData = data => {
     for (let i = 0; i < ch; i++) for (let j = 0; j < len; j++) _data[i].set(data[i][j], j * bufSize);
     const wave = new Float32Array(ch * _len),
           step = 1024;
-    for (let j = 0; j < _len; j += step) for (let i = 0; i < ch; i++) wave.set(_data[i].subarray(j, j + step), (j * ch + i) * step);
+    for (let j = 0; j < _len; j += step) for (let i = 0; i < ch; i++) wave.set(_data[i].subarray(j, j + step), j + i * step);
     return wave;
 };
 // https://www.wdic.org/w/TECH/WAV
