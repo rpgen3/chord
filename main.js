@@ -219,8 +219,6 @@
         await record.init();
         parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now() - parsedMidiKeys[0] + 500;
-        const t = parsedMidiKeys[parsedMidiKeys.length - 1];
-        endTime = t + Math.max(...parsedMidi.get(t).map(v => v[2])) * 1000;
         nowIndex = 0;
         intervalId = setInterval(update);
     };
@@ -284,6 +282,7 @@
                 }
             }
         }
+        endTime = 0;
         const deltaToMs = 1000 * 60 / getBPM(midi) / timeDivision;
         for(const {note, velocity, start, end} of heap) {
             const _note = rpgen4.piano.note[note - 21];
@@ -295,6 +294,7 @@
                     velocity / 0x7F,
                     (_end - _start) / 1000
                 ]);
+                if(endTime < _end) endTime = _end;
             }
         }
     };
