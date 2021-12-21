@@ -1,5 +1,5 @@
 // https://qiita.com/optimisuke/items/f1434d4a46afd667adc6
-export const toWAV = ({data, sampleRate, bitRate = 16}) => { // bitRate: 8 or 16 or 32
+export const toWAV = ({data, sampleRate, bitRate = 16}) => {
     if(![8, 16, 24, 32].includes(bitRate)) throw 'BitRate must be 8 or 16 or 24 or 32.';
     const view = makeFile(mergeBuf(data), data.length, sampleRate, bitRate),
           blob = new Blob([view], {type:'audio/wav'});
