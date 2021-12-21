@@ -46,12 +46,12 @@ const float2pcm = (view, offset, input, step) => {
 };
 // https://github.com/mohayonao/wav-encoder/blob/master/index.js
 const clamp = (num, min, max) => Math.max(min, Math.min(max, num)),
-      float2Int = (value, range) => clamp(Math.round(value * range), -range, range - 1),
-      pcm8 = (view, offset, value) => view.setUint8(offset, float2Int(value, 0x80) + 0x80, true),
-      pcm16 = (view, offset, value) => view.setInt16(offset, float2Int(value, 0x8000), true),
-      pcm32 = (view, offset, value) => view.setInt32(offset, float2Int(value, 0x80000000), true);
+      float2int = (value, range) => clamp(Math.round(value * range), -range, range - 1),
+      pcm8 = (view, offset, value) => view.setUint8(offset, float2int(value, 0x80) + 0x80, true),
+      pcm16 = (view, offset, value) => view.setInt16(offset, float2int(value, 0x8000), true),
+      pcm32 = (view, offset, value) => view.setInt32(offset, float2int(value, 0x80000000), true);
 const pcm24 = (view, offset, value) => {
-    const v = float2Int(value, 800000);
+    const v = float2int(value, 800000);
     view.setUint8(offset + 0, (v >>  0) & 0xFF);
     view.setUint8(offset + 1, (v >>  8) & 0xFF);
     view.setUint8(offset + 2, (v >>  16) & 0xFF);
