@@ -1,7 +1,7 @@
 export class Record {
     constructor({ctx, ch = 2, bufSize = 0}){
         this.closed = false;
-        this.data = [...Array(ch).fill([])];
+        this.data = [...Array(ch).fill().map(v => [])];
         this.node = ctx.createScriptProcessor(bufSize, ch, ch);
         this.node.onaudioprocess = e => this.process(e);
     }
