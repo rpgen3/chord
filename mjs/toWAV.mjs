@@ -51,7 +51,7 @@ const clamp = (num, min, max) => Math.max(min, Math.min(max, num)),
       pcm16 = (view, offset, value) => view.setInt16(offset, float2int(value, 0x8000), true),
       pcm32 = (view, offset, value) => view.setInt32(offset, float2int(value, 0x80000000), true);
 const pcm24 = (view, offset, value) => {
-    const v = float2int(value, 800000);
+    const v = float2int(value, 0x800000);
     view.setUint8(offset + 0, (v >>  0) & 0xFF);
     view.setUint8(offset + 1, (v >>  8) & 0xFF);
     view.setUint8(offset + 2, (v >>  16) & 0xFF);
