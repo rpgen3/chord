@@ -163,6 +163,7 @@
               a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
         for(const v of a) sf.play(v);
     };
+    let inputLimit = null;
     {
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
@@ -208,6 +209,11 @@
             accept: '.mid'
         });
         MidiParser.parse(inputFile.get(0), v => parseMidi(v));
+        inputLimit = rpgen3.addSelect(html, {
+            label: 'limit',
+            save: true,
+            list: [notSelected, ...[...Array(9).keys()].map(v => v + 1)]
+        });
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
     }
@@ -238,9 +244,13 @@
         }
         const _time = parsedMidiKeys[nowIndex];
         if(!_time && _time !== 0) return;
-        if(time > _time) {
-            nowIndex++;
-            if(time - _time < earRape) for(const v of parsedMidi.get(_time)) sf.play(...v);
+        if(time < _time) return;
+        nowIndex++;
+        if(time - _time > earRape) return;
+        const limit = inputLimit();
+        for(const [i, v] of parsedMidi.get(_time).entries()) {
+            if(limit !== notSelected && limit <= i) break;
+            sf.play(...v);
         }
     };
     const getBPM = midi => {
