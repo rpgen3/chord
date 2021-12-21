@@ -235,7 +235,7 @@
     let startTime = 0,
         endTime = 0,
         nowIndex = 0;
-    const earRape = 100;
+    const earRape = 50;
     const update = () => {
         const time = performance.now() - startTime;
         if(time > endTime) {
