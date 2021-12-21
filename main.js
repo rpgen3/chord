@@ -309,16 +309,33 @@
     const record = {};
     {
         const {html} = addHideArea('record play');
+        const inputCh = rpgen3.addSelect(html, {
+            label: 'channel',
+            save: true,
+            select: [notSelected, 1, 2, 3, 4]
+        });
+        const inputBitRate = rpgen3.addSelect(html, {
+            label: 'bitRate',
+            save: true,
+            select: [8, 16, 32]
+        });
         let rec = null;
         rpgen3.addBtn(html, 'download', () => {
-            rpgen3.download(rpgen4.toWAV(rec.data, SoundFont.ctx.sampleRate), 'chord.wav');
+            rpgen3.download(rpgen4.toWAV({
+                data: rec.data,
+                sampleRate: SoundFont.ctx.sampleRate,
+                bitRate: inputBitRate()
+            }), 'chord.wav');
         }).addClass('btn');
         const isRecord = rpgen3.addInputBool(html, {
             label: 'start record'
         });
         const init = async () => {
             if(!isRecord()) return true;
-            rec = new rpgen4.Record(SoundFont.ctx, sf.ch);
+            rec = new rpgen4.Record({
+                ctx: SoundFont.ctx,
+                ch: inputCh() === notSelected ? sf.ch : inputCh()
+            });
             SoundFont.anyNode = rec.node;
             /*await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
             rec = new AudioWorkletNode(ctx, 'record', {
