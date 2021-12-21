@@ -317,7 +317,7 @@
         const inputBitRate = rpgen3.addSelect(html, {
             label: 'bitRate',
             save: true,
-            list: [8, 16, 32],
+            list: [8, 16, 24, 32],
             value: 16
         });
         let rec = null;
