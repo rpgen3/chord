@@ -312,12 +312,13 @@
         const inputCh = rpgen3.addSelect(html, {
             label: 'channel',
             save: true,
-            select: [notSelected, 1, 2, 3, 4]
+            list: [notSelected, 1, 2, 3, 4]
         });
         const inputBitRate = rpgen3.addSelect(html, {
             label: 'bitRate',
             save: true,
-            select: [8, 16, 32]
+            list: [8, 16, 32],
+            value: 16
         });
         let rec = null;
         rpgen3.addBtn(html, 'download', () => {
