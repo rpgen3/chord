@@ -1,5 +1,5 @@
 export class Record {
-    constructor(ctx, ch = 2, bufSize = 0){
+    constructor({ctx, ch = 2, bufSize = 0}){
         this.closed = false;
         this.data = [...Array(ch).fill([])];
         this.node = ctx.createScriptProcessor(bufSize, ch, ch);
