@@ -65,7 +65,7 @@
         const selectFont = rpgen3.addSelect(html, {
             label: 'select SoundFont'
         });
-        fetchList('fontName').then(v => selectFont.update([notSelected, v], notSelected));
+        fetchList('fontName').then(v => selectFont.update([notSelected, ...v], notSelected));
         let nowFont = null;
         selectFont.elm.on('change', () => {
             const v = selectFont();
