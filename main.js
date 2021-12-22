@@ -172,8 +172,10 @@
             save: true,
             list: [notSelected, ...[...Array(9).keys()].map(v => v + 1)]
         });
-        rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
+        $('<dd>').appendTo(html);
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
+        rpgen3.addBtn(html, 'stop unforced', () => clearInterval(intervalId)).addClass('btn');
+        rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
     }
     const parsedMidi = new Map;
     let parsedMidiKeys = null,
