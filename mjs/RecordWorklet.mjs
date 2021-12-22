@@ -4,7 +4,9 @@ export class RecordWorklet {
     }
     constructor({ctx, ch = 2}){
         this.node = new AudioWorkletNode(ctx, 'Record', {
-            processorOptions: {ch}
+            numberOfInputs: 1,
+            numberOfOutputs: 1,
+            channelCount: ch
         });
     }
     close(){
