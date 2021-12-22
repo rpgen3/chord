@@ -6,7 +6,8 @@ export class RecordWorklet {
         this.node = new AudioWorkletNode(ctx, 'Record', {
             numberOfInputs: 1,
             numberOfOutputs: 1,
-            channelCount: ch
+            channelCount: ch,
+            outputChannelCount: [ch]
         });
     }
     close(){
