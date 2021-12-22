@@ -4,7 +4,7 @@ export class RecordWorklet {
             processorOptions: {ch}
         });
     }
-    async init(ctx){
+    static async init(ctx){
         await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/Record.js');
     }
     close(){
