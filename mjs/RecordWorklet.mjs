@@ -15,9 +15,7 @@ export class RecordWorklet {
     }
     async getData(){
         return new Promise(resolve => {
-            this.node.port.onmessage = ({data}) => {
-                resolve(data);
-            };
+            this.node.port.onmessage = ({data}) => resolve(data);
             this.node.port.postMessage(1);
         });
     }
