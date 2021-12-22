@@ -3,19 +3,11 @@ class Record extends AudioWorkletProcessor {
         super(options);
         this.closed = false;
         this.data = [...Array(options.outputChannelCount[0]).fill().map(v => [])];
-        this.a = null;
-        this.port.onmessage = ({data}) => {
-            if(data === 0) this.closed = true;
-            else if(data === 1) this.port.postMessage(this.data);
-            else if(data === 2) this.port.postMessage(this.a);
-        };
     }
-    process(inputs, outputs, parameters) {
+    process([input], [output], parameters) {
         const {closed, data} = this;
         if(closed) return false;
-        const input = inputs[0],
-              output = outputs[0];
-        this.a = [inputs, outputs];
+        if(!input.length) return;
         for(const i of data.keys()) {
             const buf = input[i];
             output[i].set(buf);
