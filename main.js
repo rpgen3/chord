@@ -268,6 +268,7 @@
                 if(endTime < _end) endTime = _end;
             }
         }
+        endTime += 500;
     };
     class MidiNode {
         constructor(note, velocity, start){
