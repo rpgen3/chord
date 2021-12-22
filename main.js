@@ -291,10 +291,8 @@
             save: true,
             list: {
                 [notSelected]: notSelected,
-                'monaural ch1': 1,
-                'stereo ch2': 2,
-                'stereo ch3': 3,
-                'stereo ch4': 4
+                'monaural': 1,
+                'stereo': 2
             }
         });
         const inputBitRate = rpgen3.addSelect(html, {
