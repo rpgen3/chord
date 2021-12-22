@@ -2,7 +2,7 @@ class Record extends AudioWorkletProcessor {
     constructor(options) {
         super(options);
         this.closed = false;
-        this.data = [...Array(options.channelCount).fill().map(v => [])];
+        this.data = [...Array(options.outputChannelCount[0]).fill().map(v => [])];
         this.a = this.data.slice();
         this.port.onmessage = ({data}) => {
             if(data === 0) this.closed = true;
