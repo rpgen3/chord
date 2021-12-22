@@ -36,17 +36,11 @@
         'container',
         'btn'
     ].map(v => `https://rpgen3.github.io/spatialFilter/css/${v}.css`).map(rpgen3.addCSS);
-    const g_list = await (async () => {
-        const keys = [
-            'fontName',
-            'midi'
-        ];
-        const list = {};
-        for(const [i, v] of (await Promise.all(
-            keys.map(v => fetch(`https://rpgen3.github.io/chord/list/${v}.txt`).then(v => v.text()))
-        )).entries()) list[keys[i]] = v.trim().split('\n');
-        return list;
-    })();
+    const fetchList = async ttl => {
+        const res = await fetch(`https://rpgen3.github.io/chord/list/${ttl}.txt`),
+              str = await res.text();
+        return str.trim().split('\n');
+    };
     const hideTime = 500;
     const addHideArea = (label, parentNode = main) => {
         const html = $('<div>').addClass('container').appendTo(parentNode);
@@ -69,12 +63,9 @@
     {
         const {html} = addHideArea('load SoundFont');
         const selectFont = rpgen3.addSelect(html, {
-            label: 'select SoundFont',
-            list: [
-                notSelected,
-                ...g_list.fontName
-            ]
+            label: 'select SoundFont'
         });
+        fetchList('fontName').then(v => selectFont.update([notSelected, v], notSelected));
         let nowFont = null;
         selectFont.elm.on('change', () => {
             const v = selectFont();
@@ -152,12 +143,12 @@
     {
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
-            label: 'sample',
-            list: [
-                Array(2).fill(notSelected),
-                ...g_list.midi.map(v => v.split(' ').reverse())
-            ]
+            label: 'sample'
         });
+        fetchList('midi').then(v => selectMidi.update([
+            Array(2).fill(notSelected),
+            ...v.map(v => v.split(' ').reverse())
+        ], notSelected));
         let nowMidi = null;
         selectMidi.elm.on('change', async () => {
             const v = selectMidi();
