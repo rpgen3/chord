@@ -29,6 +29,7 @@
             'inversion',
             'SoundFont',
             'Record',
+            'RecordWorklet',
             'toWAV'
         ].map(v => `https://rpgen3.github.io/chord/mjs/${v}.mjs`)
     ].flat());
@@ -279,6 +280,14 @@
     const record = {};
     {
         const {html} = addHideArea('record play');
+        const selectAPI = rpgen3.addSelect(html, {
+            label: 'API',
+            save: true,
+            list: {
+                'ScriptProcessor': true,
+                'AudioWorklet': false
+            }
+        });
         const inputCh = rpgen3.addSelect(html, {
             label: 'channel',
             save: true,
@@ -295,9 +304,9 @@
             value: 16
         });
         let rec = null;
-        rpgen3.addBtn(html, 'download', () => {
+        rpgen3.addBtn(html, 'download', async () => {
             rpgen3.download(rpgen4.toWAV({
-                data: rec.data,
+                data: 'data' in rec ? rec.data : await rec.getData(),
                 sampleRate: SoundFont.ctx.sampleRate,
                 bitRate: inputBitRate()
             }), 'chord.wav');
@@ -307,19 +316,14 @@
         });
         const init = async () => {
             if(!isRecord()) return true;
-            rec = new rpgen4.Record({
-                ctx: SoundFont.ctx,
-                ch: inputCh() === notSelected ? sf.ch : inputCh()
-            });
+            const {ctx} = SoundFont;
+            const p = {ctx, ch: inputCh() === notSelected ? sf.ch : inputCh()};
+            if(selectAPI()) rec = new rpgen4.Record(p);
+            else {
+                await rpgen4.RecordWorklet.init(ctx);
+                rec = new rpgen4.RecordWorklet(p);
+            }
             SoundFont.anyNode = rec.node;
-            /*await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/record.js');
-            rec = new AudioWorkletNode(ctx, 'record', {
-                channelCount: 1,
-                channelCountMode: 'explicit',
-                channelInterpretation: 'discrete'
-            });
-            window.sf = sf;
-            window.rec = rec;*/
         };
         const close = () => rec?.close();
         Object.assign(record, {init, close});
