@@ -4,7 +4,7 @@ class Record extends AudioWorkletProcessor {
         this.closed = false;
         this.data = [...Array(options.outputChannelCount[0]).fill().map(v => [])];
     }
-    process([input], [output], parameters) {
+    process([input], [output]) {
         const {closed, data} = this;
         if(closed) return false;
         if(!input.length) return;
