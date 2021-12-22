@@ -1,4 +1,4 @@
-class record extends AudioWorkletProcessor {
+class Record extends AudioWorkletProcessor {
     constructor() {
         super();
         const sampleRate = 48000;
@@ -16,4 +16,4 @@ class record extends AudioWorkletProcessor {
         return true;
     }
 }
-registerProcessor('record', record);
+registerProcessor('Record', Record);
