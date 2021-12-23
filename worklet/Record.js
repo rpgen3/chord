@@ -9,9 +9,9 @@ class Record extends AudioWorkletProcessor {
         };
     }
     process([input]) {
-        const {closed, data} = this;
-        if(closed) return false;
-        const min = Math.min(input.length, data.length);
+        if(this.closed) return false;
+        const {data} = this,
+              min = Math.min(input.length, data.length);
         for(let i = 0; i < min; i++) data[i].push(input[i].slice());
         return true;
     }
