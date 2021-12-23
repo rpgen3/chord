@@ -20,7 +20,7 @@ export class RecordWorklet {
     close(){
         this.recNode.port.postMessage(0);
     }
-    async getData(){
+    get data(){
         return new Promise(resolve => {
             this.recNode.port.onmessage = ({data}) => resolve(data);
             this.recNode.port.postMessage(1);
