@@ -11,8 +11,8 @@ class Record extends AudioWorkletProcessor {
     process([input], [output]) {
         const {closed, data} = this;
         if(closed) return false;
-        if(!input.length) return true;
-        for(const i of data.keys()) {
+        const max = Math.min(input.length, data.length);
+        for(let i = 0; i < max; i++) {
             const buf = input[i];
             output[i].set(buf);
             data[i].push(buf.slice());
