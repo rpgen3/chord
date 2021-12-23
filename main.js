@@ -321,7 +321,7 @@
         const init = async () => {
             if(!isRecord()) return true;
             const {ctx} = SoundFont;
-            const p = {ctx, ch: inputCh() ? inputCh() : sf.ch};
+            const p = {ctx, ch: inputCh() ? inputCh() : sf.font.ch};
             if(selectAPI()) rec = new rpgen4.Record(p);
             else {
                 await rpgen4.RecordWorklet.init(ctx);
