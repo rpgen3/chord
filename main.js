@@ -58,8 +58,8 @@
             }
         });
     };
+    let sf = null;
     const {SoundFont} = rpgen4,
-          sf = new SoundFont(),
           notSelected = 'not selected';
     {
         const {html} = addHideArea('load SoundFont');
@@ -85,12 +85,12 @@
             loadSF(input());
         }).addClass('btn');
         const loadSF = async fontName => {
-            if(!SoundFont.ctx) SoundFont.init();
+            if(!SoundFont.ctx) await SoundFont.init();
             const e = selectFont.elm.add(input.elm).add(btn);
             e.prop('disabled', true);
             dd.text('now loading');
             try {
-                await sf.load(fontName, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`);
+                sf = await SoundFont.load(fontName, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`);
                 dd.text('success loading');
             }
             catch {
@@ -185,16 +185,16 @@
     let parsedMidiKeys = null,
         intervalId = -1;
     const playMidi = async () => {
-        stopMidi();
+        await stopMidi();
         await record.init();
         parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now() - parsedMidiKeys[0] + 500;
         nowIndex = 0;
         intervalId = setInterval(update);
     };
-    const stopMidi = () => {
+    const stopMidi = async () => {
         clearInterval(intervalId);
-        SoundFont.init();
+        await SoundFont.init();
     };
     let startTime = 0,
         endTime = 0,
@@ -231,8 +231,8 @@
         if(bpm) return bpm;
         else throw 'BPM is none.';
     };
-    const parseMidi = midi => { // note, volume, duration
-        stopMidi();
+    const parseMidi = async midi => { // note, volume, duration
+        await stopMidi();
         parsedMidi.clear();
         const {track, timeDivision} = midi,
               heap = new rpgen4.Heap();
@@ -321,7 +321,7 @@
         const init = async () => {
             if(!isRecord()) return true;
             const {ctx} = SoundFont;
-            const p = {ctx, ch: inputCh() ? inputCh() : sf.font.ch};
+            const p = {ctx, ch: inputCh() ? inputCh() : SoundFont.ch};
             if(selectAPI()) rec = new rpgen4.Record(p);
             else {
                 await rpgen4.RecordWorklet.init(ctx);
