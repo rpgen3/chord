@@ -2,7 +2,7 @@ import {ForkWorklet} from 'https://rpgen3.github.io/chord/mjs/ForkWorklet.mjs';
 export class RecordWorklet {
     static init(ctx){
         return Promise.all([
-            ForkWorklet.init(),
+            ForkWorklet.init(ctx),
             ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/Record.js')
         ]);
     }
