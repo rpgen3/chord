@@ -7,7 +7,7 @@ export class RecordWorklet {
         ]);
     }
     constructor({ctx, ch = 2}){
-        const forkNode = ForkWorklet({ctx, ch});
+        const forkNode = new ForkWorklet({ctx, ch}).node;
         const recNode = new AudioWorkletNode(ctx, 'Record', {
             numberOfInputs: 1,
             numberOfOutputs: 0,
