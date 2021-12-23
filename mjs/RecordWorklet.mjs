@@ -15,14 +15,15 @@ export class RecordWorklet {
         });
         forkNode.connect(recNode);
         this.node = forkNode;
+        this.recNode = recNode;
     }
     close(){
-        this.node.port.postMessage(0);
+        this.recNode.port.postMessage(0);
     }
     async getData(){
         return new Promise(resolve => {
-            this.node.port.onmessage = ({data}) => resolve(data);
-            this.node.port.postMessage(1);
+            this.recNode.port.onmessage = ({data}) => resolve(data);
+            this.recNode.port.postMessage(1);
         });
     }
 }
