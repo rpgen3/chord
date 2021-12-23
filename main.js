@@ -85,7 +85,7 @@
             loadSF(input());
         }).addClass('btn');
         const loadSF = async fontName => {
-            if(!SoundFont.ctx) await SoundFont.init();
+            if(!SoundFont.ctx) SoundFont.init();
             const e = selectFont.elm.add(input.elm).add(btn);
             e.prop('disabled', true);
             dd.text('now loading');
@@ -185,16 +185,16 @@
     let parsedMidiKeys = null,
         intervalId = -1;
     const playMidi = async () => {
-        await stopMidi();
+        stopMidi();
         await record.init();
         parsedMidiKeys = [...parsedMidi.keys()];
         startTime = performance.now() - parsedMidiKeys[0] + 500;
         nowIndex = 0;
         intervalId = setInterval(update);
     };
-    const stopMidi = async () => {
+    const stopMidi = () => {
         clearInterval(intervalId);
-        await SoundFont.init();
+        SoundFont.init();
     };
     let startTime = 0,
         endTime = 0,
@@ -232,7 +232,7 @@
         else throw 'BPM is none.';
     };
     const parseMidi = async midi => { // note, volume, duration
-        await stopMidi();
+        stopMidi();
         parsedMidi.clear();
         const {track, timeDivision} = midi,
               heap = new rpgen4.Heap();
