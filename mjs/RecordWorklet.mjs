@@ -1,6 +1,6 @@
 export class RecordWorklet {
-    static async init(ctx){
-        await ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/Record.js');
+    static init(ctx){
+        return ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/Record.js');
     }
     constructor({ctx, ch = 2}){
         this.node = new AudioWorkletNode(ctx, 'Record', {
