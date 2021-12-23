@@ -1,13 +1,20 @@
+import {ForkWorklet} from 'https://rpgen3.github.io/chord/mjs/ForkWorklet.mjs';
 export class RecordWorklet {
     static init(ctx){
-        return ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/Record.js');
+        return Promise.all([
+            ForkWorklet.init(),
+            ctx.audioWorklet.addModule('https://rpgen3.github.io/chord/worklet/Record.js')
+        ]);
     }
     constructor({ctx, ch = 2}){
-        this.node = new AudioWorkletNode(ctx, 'Record', {
+        const forkNode = ForkWorklet({ctx, ch});
+        const recNode = new AudioWorkletNode(ctx, 'Record', {
             numberOfInputs: 1,
             numberOfOutputs: 1,
             outputChannelCount: [ch]
         });
+        forkNode.connect(recNode);
+        this.node = forkNode;
     }
     close(){
         this.node.port.postMessage(0);
