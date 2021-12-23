@@ -10,8 +10,8 @@ export class RecordWorklet {
         const forkNode = ForkWorklet({ctx, ch});
         const recNode = new AudioWorkletNode(ctx, 'Record', {
             numberOfInputs: 1,
-            numberOfOutputs: 1,
-            outputChannelCount: [ch]
+            numberOfOutputs: 0,
+            processorOptions: {ch}
         });
         forkNode.connect(recNode);
         this.node = forkNode;
