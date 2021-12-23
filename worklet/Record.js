@@ -8,15 +8,11 @@ class Record extends AudioWorkletProcessor {
             else if(data === 1) this.port.postMessage(this.data);
         };
     }
-    process([input], [output]) {
+    process([input]) {
         const {closed, data} = this;
         if(closed) return false;
         const min = Math.min(input.length, data.length);
-        for(let i = 0; i < min; i++) {
-            const buf = input[i];
-            output[i].set(buf);
-            data[i].push(buf.slice());
-        }
+        for(let i = 0; i < min; i++) data[i].push(input[i].slice());
         return true;
     }
 }
