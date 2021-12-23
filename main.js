@@ -171,7 +171,10 @@
         inputLimit = rpgen3.addSelect(html, {
             label: 'limit',
             save: true,
-            list: [notSelected, ...[...Array(9).keys()].map(v => v + 1)]
+            list: [
+                ['none', notSelected],
+                ...[...Array(9).keys()].map(v => v + 1).map(v => [v, v])
+            ]
         });
         $('<dd>').appendTo(html);
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
@@ -293,7 +296,7 @@
             label: 'channel',
             save: true,
             list: {
-                [notSelected]: notSelected,
+                'auto': 0,
                 'monaural': 1,
                 'stereo': 2
             }
@@ -318,7 +321,7 @@
         const init = async () => {
             if(!isRecord()) return true;
             const {ctx} = SoundFont;
-            const p = {ctx, ch: inputCh() === notSelected ? sf.ch : inputCh()};
+            const p = {ctx, ch: inputCh() ? inputCh() : sf.ch};
             if(selectAPI()) rec = new rpgen4.Record(p);
             else {
                 await rpgen4.RecordWorklet.init(ctx);
