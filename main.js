@@ -310,7 +310,7 @@
         let rec = null;
         rpgen3.addBtn(html, 'download', async () => {
             rpgen3.download(rpgen4.toWAV({
-                data: 'data' in rec ? rec.data : await rec.getData(),
+                data: await rec.data,
                 sampleRate: SoundFont.ctx.sampleRate,
                 bitRate: inputBitRate()
             }), 'chord.wav');
