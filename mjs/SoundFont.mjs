@@ -1,22 +1,24 @@
 import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
 import {flat2sharp} from 'https://rpgen3.github.io/chord/mjs/flat2sharp.mjs';
+import {ForkWorklet} from 'https://rpgen3.github.io/chord/mjs/ForkWorklet.mjs';
 if(!('MIDI' in window)) window.MIDI = {};
 if(!('Soundfont' in window.MIDI)) window.MIDI.Soundfont = {};
-class Font {
-    constructor({bufs, ch}){
-        this.bufs = bufs;
-        this.ch = ch;
-    }
-}
 export class SoundFont {
     static ctx = null;
     static fonts = new Map;
+    static ch = 1;
+    static forkNode = null;
     static anyNode = null;
-    static init(){ // must done after user gesture
+    static async init(){ // must done after user gesture
         this.ctx?.close();
-        this.ctx = new AudioContext();
+        const ctx = new AudioContext();
+        this.ctx = ctx;
+        await ForkWorklet.init(ctx);
+        this.forkNode = new ForkWorklet({
+            ctx, ch: this.ch
+        }).node;
     }
-    static async load(fontName, url){
+    static async load(fontName, url, isDrum = false){
         const {Soundfont} = window.MIDI;
         if(!(fontName in Soundfont)) await getScript(url);
         if(!(fontName in Soundfont)) throw 'SoundFont is not found.';
@@ -33,30 +35,32 @@ export class SoundFont {
                     return [flat2sharp(k), _buf];
                 })
             ));
-            fonts.set(fontName, new Font({bufs, ch}));
+            if(this.ch < ch) this.ch = ch;
+            fonts.set(fontName, new SoundFont(bufs, ch, isDrum));
         }
         return fonts.get(fontName);
     }
-    constructor(isDrum = false){
-        this.font = null;
+    constructor(bufs, ch, isDrum){
+        this.bufs = bufs;
+        this.ch = ch;
         this.isDrum = isDrum;
         this.min = 0.5;
     }
-    async load(fontName, url){ // https://github.com/gleitz/midi-js-soundfonts
-        this.font = await SoundFont.load(fontName, url);
-    }
     play(note = 'C4', volume = 1.0, duration = 1.0){
-        const {bufs} = this.font;
+        const {bufs} = this;
         if(!bufs.has(note)) return;
         const buf = bufs.get(note),
-              {ctx, anyNode} = SoundFont,
+              {ctx, forkNode, anyNode} = SoundFont,
               src = ctx.createBufferSource(),
               g = ctx.createGain();
         src.buffer = buf;
         g.gain.value = volume;
         if(!this.isDrum) g.gain.linearRampToValueAtTime(0, ctx.currentTime + Math.min(buf.duration, Math.max(this.min, duration)));
         src.connect(g);
-        if(anyNode) g.connect(anyNode).connect(ctx.destination);
+        if(anyNode) {
+            g.connect(forkNode).connect(ctx.destination);
+            forkNode.connect(anyNode);
+        }
         else g.connect(ctx.destination);
         src.start();
     }
