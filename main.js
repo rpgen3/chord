@@ -172,7 +172,7 @@
             label: 'limit',
             save: true,
             list: [
-                ['none', notSelected],
+                ['none', 0],
                 ...[...Array(9).keys()].map(v => v + 1).map(v => [v, v])
             ]
         });
@@ -213,7 +213,7 @@
         if(time - _time > earRape) return;
         const limit = inputLimit();
         for(const [i, v] of parsedMidi.get(_time).entries()) {
-            if(limit !== notSelected && limit <= i) break;
+            if(limit && limit <= i) break;
             sf.play(...v);
         }
     };
