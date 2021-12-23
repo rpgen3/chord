@@ -210,7 +210,7 @@
         if(!_time && _time !== 0) return;
         if(time < _time) return;
         nowIndex++;
-        if(time - _time > earRape) return;
+        if(time - _time > earRape) return update();
         const limit = inputLimit();
         for(const [i, v] of parsedMidi.get(_time).entries()) {
             if(limit && limit <= i) break;
