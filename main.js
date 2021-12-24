@@ -176,7 +176,7 @@
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
     }
     const timeline = [],
-          intervalTime = 1.0,
+          intervalTime = 0.1,
           planTime = intervalTime * 2,
           coolTime = 0.5;
     let intervalId = -1;
