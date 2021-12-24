@@ -39,7 +39,7 @@ export class SoundFont {
         this.isDrum = isDrum;
         this.min = 0.5;
     }
-    play({note = 'C4', volume = 1.0, duration = 1.0, when = 0.0}={}){
+    play({note = 'C4', volume = 1.0, when = 0.0, duration = 1.0}={}){
         const {bufs} = this;
         if(!bufs.has(note)) return;
         const buf = bufs.get(note),
