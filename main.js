@@ -185,6 +185,7 @@
         startTime = SoundFont.ctx.currentTime - timeline[0].when + 0.5;
         nowIndex = 0;
         intervalId = setInterval(update, intervalTime * 1000);
+        update();
     };
     const stopMidi = () => {
         clearInterval(intervalId);
