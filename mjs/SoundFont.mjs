@@ -11,7 +11,7 @@ export class SoundFont {
         this.ctx?.close();
         this.ctx = new AudioContext();
     }
-    static async load(fontName, url, isDrum = false){
+    static async load({fontName, url, isDrum = false}){
         const {Soundfont} = window.MIDI;
         if(!(fontName in Soundfont)) await getScript(url);
         if(!(fontName in Soundfont)) throw 'SoundFont is not found.';
@@ -39,7 +39,7 @@ export class SoundFont {
         this.isDrum = isDrum;
         this.min = 0.5;
     }
-    play(note = 'C4', volume = 1.0, duration = 1.0){
+    play({note = 'C4', volume = 1.0, duration = 1.0, when = 0.0}={}){
         const {bufs} = this;
         if(!bufs.has(note)) return;
         const buf = bufs.get(note),
@@ -48,10 +48,10 @@ export class SoundFont {
               g = ctx.createGain();
         src.buffer = buf;
         g.gain.value = volume;
-        if(!this.isDrum) g.gain.linearRampToValueAtTime(0, ctx.currentTime + Math.min(buf.duration, Math.max(this.min, duration)));
+        if(!this.isDrum) g.gain.linearRampToValueAtTime(0, ctx.currentTime + when + Math.min(buf.duration, Math.max(this.min, duration)));
         src.connect(g);
         if(anyNode) g.connect(anyNode).connect(ctx.destination);
         else g.connect(ctx.destination);
-        src.start();
+        src.start(when);
     }
 }
