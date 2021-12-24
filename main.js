@@ -90,7 +90,10 @@
             e.prop('disabled', true);
             dd.text('now loading');
             try {
-                sf = await SoundFont.load(fontName, `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`);
+                sf = await SoundFont.load({
+                    fontName,
+                    url: `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`
+                });
                 dd.text('success loading');
             }
             catch {
@@ -138,9 +141,8 @@
     const playChord = (note, chord, inversion) => {
         const root = rpgen4.piano.note2index(note),
               a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
-        for(const v of a) sf.play(v);
+        for(const v of a) sf.play({note: v});
     };
-    let inputLimit = null;
     {
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
@@ -168,29 +170,21 @@
             accept: '.mid'
         });
         MidiParser.parse(inputFile.get(0), v => parseMidi(v));
-        inputLimit = rpgen3.addSelect(html, {
-            label: 'limit',
-            save: true,
-            list: [
-                ['none', 0],
-                ...[...Array(9).keys()].map(v => v + 1).map(v => [v, v])
-            ]
-        });
         $('<dd>').appendTo(html);
         rpgen3.addBtn(html, 'play', () => playMidi()).addClass('btn');
         rpgen3.addBtn(html, 'stop unforced', () => clearInterval(intervalId)).addClass('btn');
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
     }
-    const parsedMidi = new Map;
-    let parsedMidiKeys = null,
-        intervalId = -1;
+    const timeline = [],
+          intervalTime = 1.0,
+          planTime = intervalTime * 2;
+    let intervalId = -1;
     const playMidi = async () => {
         stopMidi();
         await record.init();
-        parsedMidiKeys = [...parsedMidi.keys()];
-        startTime = performance.now() - parsedMidiKeys[0] + 500;
+        startTime = SoundFont.ctx.currentTime - timeline[0].when + 0.5;
         nowIndex = 0;
-        intervalId = setInterval(update);
+        intervalId = setInterval(update, intervalTime * 1000);
     };
     const stopMidi = () => {
         clearInterval(intervalId);
@@ -199,22 +193,24 @@
     let startTime = 0,
         endTime = 0,
         nowIndex = 0;
-    const earRape = 50;
     const update = () => {
-        const time = performance.now() - startTime;
+        const time = SoundFont.ctx.currentTime - startTime;
         if(time > endTime) {
             record.close();
             return stopMidi();
         }
-        const _time = parsedMidiKeys[nowIndex];
-        if(!_time && _time !== 0) return;
-        if(time < _time) return;
-        nowIndex++;
-        if(time - _time > earRape) return update();
-        const limit = inputLimit();
-        for(const [i, v] of parsedMidi.get(_time).entries()) {
-            if(limit && limit <= i) break;
-            sf.play(...v);
+        while(nowIndex < timeline.length){
+            const {ch, note, volume, when, duration} = timeline[nowIndex],
+                  _when = when - time;
+            if(_when > planTime) break;
+            nowIndex++;
+            if(_when < 0) continue;
+            sf.play({
+                note,
+                volume,
+                when: _when,
+                duration
+            });
         }
     };
     const getBPM = midi => {
@@ -233,7 +229,6 @@
     };
     const parseMidi = async midi => { // note, volume, duration
         stopMidi();
-        parsedMidi.clear();
         const {track, timeDivision} = midi,
               heap = new rpgen4.Heap();
         for(const {event} of track) {
@@ -245,40 +240,53 @@
                 const [note, velocity] = data,
                       isNoteOFF = type === 8 || !velocity;
                 if(now.has(note) && isNoteOFF) {
-                    const node = now.get(note);
-                    node.end = currentTime;
-                    heap.push(node.start, node);
+                    const unit = now.get(note);
+                    unit.end = currentTime;
+                    heap.push(unit.start, unit);
                     now.delete(note);
                 }
-                else if(!isNoteOFF) {
-                    const node = new MidiNode(note, velocity, currentTime);
-                    now.set(note, node);
-                }
+                else if(!isNoteOFF) now.set(note, new MidiUnit({
+                    ch: channel,
+                    note,
+                    velocity,
+                    start: currentTime
+                }));
             }
         }
+        while(timeline.length) timeline.pop();
         endTime = 0;
-        const deltaToMs = 1000 * 60 / getBPM(midi) / timeDivision;
-        for(const {note, velocity, start, end} of heap) {
+        const deltaToSec = 60 / getBPM(midi) / timeDivision;
+        for(const {ch, note, velocity, start, end} of heap) {
             const _note = rpgen4.piano.note[note - 21];
-            if(_note) {
-                const [_start, _end] = [start, end].map(v => v * deltaToMs | 0);
-                if(!parsedMidi.has(_start)) parsedMidi.set(_start, []);
-                parsedMidi.get(_start).push([
-                    _note,
-                    velocity / 0x7F,
-                    (_end - _start) / 1000
-                ]);
-                if(endTime < _end) endTime = _end;
-            }
+            if(!_note) continue;
+            const [_start, _end] = [start, end].map(v => v * deltaToSec);
+            timeline.push(new AudioUnit({
+                ch,
+                note: _note,
+                volume: velocity / 0x7F,
+                when: _start,
+                duration: _end - _start
+            }));
+            if(endTime < _end) endTime = _end;
         }
-        endTime += 500;
+        endTime += 0.5;
     };
-    class MidiNode {
-        constructor(note, velocity, start){
+    class MidiUnit {
+        constructor({ch, note, velocity, start}){
+            this.ch = ch;
             this.note = note;
             this.velocity = velocity;
             this.start = start;
             this.end = -1;
+        }
+    }
+    class AudioUnit {
+        constructor({ch, note, volume, when, duration}){
+            this.ch = ch;
+            this.note = note;
+            this.volume = volume;
+            this.when = when;
+            this.duration = duration;
         }
     }
     const record = {};
