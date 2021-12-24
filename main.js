@@ -176,8 +176,7 @@
         rpgen3.addBtn(html, 'stop', () => stopMidi()).addClass('btn');
     }
     const timeline = [],
-          intervalTime = 0.01,
-          planTime = intervalTime * 2,
+          planTime = 0.1,
           coolTime = 0.5;
     let intervalId = -1;
     const playMidi = async () => {
@@ -185,7 +184,7 @@
         await record.init();
         startTime = SoundFont.ctx.currentTime - timeline[0].when + coolTime;
         nowIndex = 0;
-        intervalId = setInterval(update, intervalTime * 1000);
+        intervalId = setInterval(update);
         update();
         window.t = timeline;
     };
