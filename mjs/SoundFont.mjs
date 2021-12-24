@@ -46,7 +46,7 @@ export class SoundFont {
               {ctx, anyNode} = SoundFont,
               src = ctx.createBufferSource(),
               g = ctx.createGain(),
-              _when = ctx.currentTime;
+              _when = when + ctx.currentTime;
         src.buffer = buf;
         g.gain.value = volume;
         if(!this.isDrum) g.gain.linearRampToValueAtTime(0, _when + Math.min(buf.duration, Math.max(this.min, duration)));
