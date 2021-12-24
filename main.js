@@ -177,15 +177,17 @@
     }
     const timeline = [],
           intervalTime = 1.0,
-          planTime = intervalTime * 2;
+          planTime = intervalTime * 2,
+          coolTime = 0.5;
     let intervalId = -1;
     const playMidi = async () => {
         stopMidi();
         await record.init();
-        startTime = SoundFont.ctx.currentTime - timeline[0].when + 0.5;
+        startTime = SoundFont.ctx.currentTime - timeline[0].when + coolTime;
         nowIndex = 0;
         intervalId = setInterval(update, intervalTime * 1000);
         update();
+        window.t = timeline;
     };
     const stopMidi = () => {
         clearInterval(intervalId);
@@ -270,7 +272,7 @@
             }));
             if(endTime < _end) endTime = _end;
         }
-        endTime += 0.5;
+        endTime += coolTime;
     };
     class MidiUnit {
         constructor({ch, note, velocity, start}){
