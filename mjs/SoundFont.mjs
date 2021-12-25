@@ -39,20 +39,27 @@ export class SoundFont {
         this.isDrum = isDrum;
         this.min = 0.5;
     }
-    play({note = 'C4', volume = 1.0, when = 0.0, duration = 1.0}={}){
+    play({
+        ctx = SoundFont.ctx,
+        note = 'C4',
+        volume = 1.0,
+        when = 0.0,
+        duration = 1.0
+    }={}){
         const {bufs} = this;
         if(!bufs.has(note)) return;
         const buf = bufs.get(note),
-              {ctx, anyNode} = SoundFont,
               src = ctx.createBufferSource(),
               g = ctx.createGain(),
-              _when = when + ctx.currentTime;
+              _when = when + ctx.currentTime,
+              _duration = Math.min(buf.duration, Math.max(this.min, duration));
         src.buffer = buf;
         g.gain.value = volume;
-        if(!this.isDrum) g.gain.linearRampToValueAtTime(0, _when + Math.min(buf.duration, Math.max(this.min, duration)));
+        if(!this.isDrum) g.gain.linearRampToValueAtTime(0, _when + _duration);
         src.connect(g);
+        const {anyNode} = SoundFont;
         if(anyNode) g.connect(anyNode).connect(ctx.destination);
         else g.connect(ctx.destination);
-        src.start(_when);
+        src.start(_when, 0, _duration);
     }
 }
