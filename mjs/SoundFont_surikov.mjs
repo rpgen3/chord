@@ -14,7 +14,7 @@ export class SoundFont_surikov {
         return `_${isDrum ? 'drum' : 'tone'}_${fontName}`;
     }
     static toURL(fontName){
-        return `https://surikov.github.io/webaudiofontdata/sound/${fontName}_sf2_file.js`;
+        return `https://surikov.github.io/webaudiofontdata/sound/${fontName}.js`;
     }
     static async load({fontName, url, isDrum = false}){
         if(!(fontName in window)) await getScript(url);
