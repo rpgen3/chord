@@ -50,16 +50,16 @@ export class SoundFont_gleitz {
         when = 0.0,
         duration = 1.0
     }={}){
-        const {bufs} = this;
+        const {bufs, isDrum} = this;
         if(!bufs.has(note)) return;
         const buf = bufs.get(note),
               src = ctx.createBufferSource(),
               g = ctx.createGain(),
               _when = when + ctx.currentTime,
-              end = _when + Math.min(buf.duration, Math.max(this.min, duration));
+              end = _when + (isDrum ? buf.duration : Math.min(buf.duration, Math.max(this.min, duration)));
         src.buffer = buf;
         g.gain.value = volume;
-        if(!this.isDrum) g.gain.linearRampToValueAtTime(0, end);
+        if(!isDrum) g.gain.linearRampToValueAtTime(0, end);
         src.connect(g);
         const {anyNode} = this.constructor;
         if(anyNode) g.connect(anyNode).connect(ctx.destination);
