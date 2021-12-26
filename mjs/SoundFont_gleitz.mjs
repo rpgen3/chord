@@ -12,9 +12,6 @@ export class SoundFont_gleitz {
         this.ctx?.close();
         this.ctx = new AudioContext();
     }
-    static toFontName(fontName){
-        return fontName;
-    }
     static toURL(fontName){
         return `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`;
     }
