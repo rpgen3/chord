@@ -86,10 +86,12 @@
         });
         selectAPI.elm.on('change', async () => {
             const i = selectAPI(),
-                  list = await fetchList(`fontName_${authorNames[i]}`);
-            selectFont.update([notSelected, ...(
-                i ? list.map(v => v.split(' ').reverse()) : list
-            )], notSelected);
+                  list = await fetchList(`fontName_${authorNames[i]}`),
+                  _list = i ? [
+                      [notSelected, notSelected],
+                      ...list.map(v => [v.slice(0, 4), v.slice(4)].reverse())
+                  ] : [notSelected, ...list];
+            selectFont.update(_list, notSelected);
             SoundFont = SoundFonts[i];
         }).trigger('change');
         let nowFont = null;
@@ -109,15 +111,14 @@
         const btn = rpgen3.addBtn(html, 'search', () => loadSF(input())).addClass('btn');
         const loadSF = async fontName => {
             if(!SoundFont.ctx) SoundFont.init();
-            const e = selectFont.elm.add(input.elm).add(btn);
+            const e = selectAPI.elm.add(selectFont.elm).add(input.elm).add(btn);
             e.prop('disabled', true);
             dd.text('now loading');
             try {
+                const _fontName = selectAPI() ? `${fontName}_FluidR3_GM` : fontName;
                 sf = await SoundFont.load({
-                    fontName: SoundFont.toFontName(
-                        selectAPI() ? `${fontName}_FluidR3_GM` : fontName
-                    ),
-                    url: SoundFont.toURL(fontName)
+                    fontName: SoundFont.toFontName(_fontName),
+                    url: SoundFont.toURL(_fontName)
                 });
                 dd.text('success loading');
             }
