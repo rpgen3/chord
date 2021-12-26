@@ -469,7 +469,7 @@
         });
         const init = async () => {
             if(!isRecord()) return true;
-            const {ctx} = SoundFont;
+            const {ctx} = audioNode;
             const p = {ctx, ch: inputCh() ? inputCh() : SoundFont.ch};
             if(selectAPI()) rec = new rpgen4.Record(p);
             else {
