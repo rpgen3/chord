@@ -101,7 +101,6 @@
         rpgen3.addA(dd, 'https://github.com/gleitz/midi-js-soundfonts/tree/gh-pages/FluidR3_GM', 'source');
         const btn = rpgen3.addBtn(html, 'search', () => loadSF(input())).addClass('btn');
         const loadSF = async fontName => {
-            if(!SoundFont.ctx) SoundFont.init();
             const e = selectAuthor.elm.add(selectFont.elm).add(input.elm).add(btn);
             e.prop('disabled', true);
             dd.text('now loading');
@@ -157,7 +156,6 @@
               map = new Map(),
               drums = new Map();
         selectDrum.elm.on('change', async () => {
-            if(!surikov.ctx) surikov.init();
             const e = selectDrum.elm;
             e.prop('disabled', true);
             dd.text('now loading');
@@ -314,7 +312,7 @@
         stopMidi();
         await record.init();
         audioNode.init();
-        startTime = SoundFont.ctx.currentTime - timeline[0].when + coolTime;
+        startTime = audioNode.ctx.currentTime - timeline[0].when + coolTime;
         nowIndex = 0;
         intervalId = setInterval(update);
         update();
@@ -327,7 +325,7 @@
         endTime = 0,
         nowIndex = 0;
     const update = () => {
-        const time = SoundFont.ctx.currentTime - startTime;
+        const time = audioNode.ctx.currentTime - startTime;
         if(time > endTime) {
             record.close();
             return stopMidi();
@@ -462,7 +460,7 @@
         rpgen3.addBtn(html, 'download', async () => {
             rpgen3.download(rpgen4.toWAV({
                 data: await rec.data,
-                sampleRate: SoundFont.ctx.sampleRate,
+                sampleRate: audioNode.ctx.sampleRate,
                 bitRate: inputBitRate()
             }), 'chord.wav');
         }).addClass('btn');
