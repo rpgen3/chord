@@ -23,7 +23,9 @@ export class SoundFont_surikov {
         if(!fonts.has(fontName)) {
             const zones = new Map;
             let ch = -1;
-            for(const [i, v] of await findZone(window[fontName].zones, [...piano.note.keys()].map(v => v + 21))) {
+            for(const [i, v] of (
+                await findZone(window[fontName].zones, [...piano.note.keys()].map(v => v + 21))
+            ).entries()) {
                 const {numberOfChannels} = v.buffer;
                 if(ch < numberOfChannels) ch = numberOfChannels;
                 zones.set(piano.note[i], v);
