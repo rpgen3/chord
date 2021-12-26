@@ -49,7 +49,7 @@ export class SoundFont_surikov {
         when = 0.0,
         duration = 1.0
     }={}){
-        const {zones} = this;
+        const {zones, isDrum} = this;
         if(!zones.has(note)) return;
         const zone = zones.get(note),
               src = ctx.createBufferSource(),
@@ -61,8 +61,8 @@ export class SoundFont_surikov {
         src.playbackRate.setValueAtTime(_param.playbackRate, 0);
         Object.assign(src, _param.src);
         const _duration = duration + 0.05,
-              end = _when + (src.loop ? _duration : Math.min(_duration, _param.min));
-        if(!this.isDrum) g.gain.linearRampToValueAtTime(0, end);
+              end = _when + (isDrum ? buffer.duration : (src.loop ? _duration : Math.min(_duration, _param.min)));
+        if(!isDrum) g.gain.linearRampToValueAtTime(0, end);
         src.connect(g);
         const {anyNode} = this.constructor;
         if(anyNode) g.connect(anyNode).connect(ctx.destination);
