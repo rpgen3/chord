@@ -5,7 +5,7 @@ if(!('Soundfont' in window.MIDI)) window.MIDI.Soundfont = {};
 export class SoundFont {
     static ctx = null;
     static fonts = new Map;
-    static ch = 1;
+    static ch = -1;
     static anyNode = null; // user custom
     static init(){ // must done after user gesture
         this.ctx?.close();
