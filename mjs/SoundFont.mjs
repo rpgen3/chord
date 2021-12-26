@@ -15,14 +15,14 @@ export class SoundFont {
         const {Soundfont} = window.MIDI;
         if(!(fontName in Soundfont)) await getScript(url);
         if(!(fontName in Soundfont)) throw 'SoundFont is not found.';
-        const {fonts} = this;
+        const {fonts, ctx} = this;
         if(!fonts.has(fontName)) {
             let ch = -1;
             const bufs = new Map(await Promise.all(
                 Object.entries(window.MIDI.Soundfont[fontName]).map(async ([k, v]) => {
                     const res = await fetch(v),
                           buf = await res.arrayBuffer(),
-                          _buf = await SoundFont.ctx.decodeAudioData(buf),
+                          _buf = await ctx.decodeAudioData(buf),
                           {numberOfChannels} = _buf;
                     if(ch < numberOfChannels) ch = numberOfChannels;
                     return [flat2sharp(k), _buf];
@@ -40,7 +40,7 @@ export class SoundFont {
         this.min = 0.5;
     }
     play({
-        ctx = SoundFont.ctx,
+        ctx = this.constructor.ctx,
         note = 'C4',
         volume = 1.0,
         when = 0.0,
@@ -57,7 +57,7 @@ export class SoundFont {
         g.gain.value = volume;
         if(!this.isDrum) g.gain.linearRampToValueAtTime(0, end);
         src.connect(g);
-        const {anyNode} = SoundFont;
+        const {anyNode} = this.constructor;
         if(anyNode) g.connect(anyNode).connect(ctx.destination);
         else g.connect(ctx.destination);
         src.start(_when);
