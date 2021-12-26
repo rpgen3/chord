@@ -76,16 +76,16 @@
     const notSelected = 'not selected';
     {
         const {html} = addHideArea('load SoundFont');
-        const selectAPI = rpgen3.addSelect(html, {
-            label: 'API',
+        const selectAuthor = rpgen3.addSelect(html, {
+            label: 'author',
             save: true,
             list: [...authorNames.entries()].map(v => v.reverse())
         });
         const selectFont = rpgen3.addSelect(html, {
             label: 'select SoundFont'
         });
-        selectAPI.elm.on('change', async () => {
-            const i = selectAPI(),
+        selectAuthor.elm.on('change', async () => {
+            const i = selectAuthor(),
                   list = await fetchList(`fontName_${authorNames[i]}`),
                   _list = i ? [
                       [notSelected, notSelected],
@@ -111,11 +111,11 @@
         const btn = rpgen3.addBtn(html, 'search', () => loadSF(input())).addClass('btn');
         const loadSF = async fontName => {
             if(!SoundFont.ctx) SoundFont.init();
-            const e = selectAPI.elm.add(selectFont.elm).add(input.elm).add(btn);
+            const e = selectAuthor.elm.add(selectFont.elm).add(input.elm).add(btn);
             e.prop('disabled', true);
             dd.text('now loading');
             try {
-                const _fontName = selectAPI() ? `${fontName}_FluidR3_GM` : fontName;
+                const _fontName = selectAuthor() ? `${fontName}_FluidR3_GM` : fontName;
                 sf = await SoundFont.load({
                     fontName: SoundFont.toFontName(_fontName),
                     url: SoundFont.toURL(_fontName)
