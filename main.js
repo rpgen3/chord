@@ -66,6 +66,11 @@
             }
         });
     };
+    const authorNames = [
+        'gleitz',
+        'surikov'
+    ];
+    const SoundFonts = authorNames.map(v => rpgen4[`SoundFont_${v}`]);
     let SoundFont = null,
         sf = null;
     const notSelected = 'not selected';
@@ -74,18 +79,15 @@
         const selectAPI = rpgen3.addSelect(html, {
             label: 'API',
             save: true,
-            list: [
-                'gleitz',
-                'surikov'
-            ]
+            list: [...authorNames.entries()].map(v => v.reverse())
         });
         const selectFont = rpgen3.addSelect(html, {
             label: 'select SoundFont'
         });
         selectAPI.elm.on('change', () => {
-            const authorName = selectAPI();
-            SoundFont = rpgen4[`SoundFont_${authorName}`];
-            fetchList(`fontName_${authorName}`).then(v => selectFont.update([notSelected, ...v], notSelected));
+            const i = selectAPI();
+            SoundFont = SoundFonts[i];
+            fetchList(`fontName_${authorNames[i]}`).then(v => selectFont.update([notSelected, ...v], notSelected));
         }).trigger('change');
         let nowFont = null;
         selectFont.elm.on('change', () => {
@@ -208,7 +210,7 @@
     };
     const stopMidi = () => {
         clearInterval(intervalId);
-        SoundFont.init();
+        for(const v of SoundFonts) v.init();
     };
     let startTime = 0,
         endTime = 0,
