@@ -27,21 +27,29 @@
         [
             'chord',
             'inversion',
-            'SoundFont',
             'Record',
             'RecordWorklet',
-            'toWAV'
+            'toWAV',
+            'SoundFont_gleitz',
+            'SoundFont_surikov'
         ].map(v => `https://rpgen3.github.io/chord/mjs/${v}.mjs`)
     ].flat());
     [
         'container',
         'btn'
     ].map(v => `https://rpgen3.github.io/spatialFilter/css/${v}.css`).map(rpgen3.addCSS);
-    const fetchList = async ttl => {
-        const res = await fetch(`https://rpgen3.github.io/chord/list/${ttl}.txt`),
-              str = await res.text();
-        return str.trim().split('\n');
-    };
+    const fetchList = (() => {
+        const m = new Map;
+        return async ttl => {
+            if(!m.has(ttl)) {
+                const res = await fetch(`https://rpgen3.github.io/chord/list/${ttl}.txt`),
+                      str = await res.text(),
+                      v = str.trim().split('\n');
+                m.set(ttl, v);
+            }
+            return m.get(ttl);
+        };
+    })();
     const hideTime = 500;
     const addHideArea = (label, parentNode = main) => {
         const html = $('<div>').addClass('container').appendTo(parentNode);
@@ -58,15 +66,27 @@
             }
         });
     };
-    let sf = null;
-    const {SoundFont} = rpgen4,
-          notSelected = 'not selected';
+    let SoundFont = null,
+        sf = null;
+    const notSelected = 'not selected';
     {
         const {html} = addHideArea('load SoundFont');
+        const selectAPI = rpgen3.addSelect(html, {
+            label: 'API',
+            save: true,
+            list: [
+                'gleitz',
+                'surikov'
+            ]
+        });
         const selectFont = rpgen3.addSelect(html, {
             label: 'select SoundFont'
         });
-        fetchList('fontName').then(v => selectFont.update([notSelected, ...v], notSelected));
+        selectAPI.elm.on('change', () => {
+            const authorName = selectAPI();
+            SoundFont = rpgen4[`SoundFont_${authorName}`];
+            fetchList(`fontName_${authorName}`).then(v => selectFont.update([notSelected, ...v], notSelected));
+        }).trigger('change');
         let nowFont = null;
         selectFont.elm.on('change', () => {
             const v = selectFont();
@@ -81,9 +101,7 @@
         input.elm.prop('placeholder', 'see source');
         const dd = $('<dd>').appendTo(html);
         rpgen3.addA(dd, 'https://github.com/gleitz/midi-js-soundfonts/tree/gh-pages/FluidR3_GM', 'source');
-        const btn = rpgen3.addBtn(html, 'search', () => {
-            loadSF(input());
-        }).addClass('btn');
+        const btn = rpgen3.addBtn(html, 'search', () => loadSF(input())).addClass('btn');
         const loadSF = async fontName => {
             if(!SoundFont.ctx) SoundFont.init();
             const e = selectFont.elm.add(input.elm).add(btn);
@@ -91,8 +109,8 @@
             dd.text('now loading');
             try {
                 sf = await SoundFont.load({
-                    fontName,
-                    url: `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`
+                    fontName: SoundFont.toFontName(fontName),
+                    url: SoundFont.toURL(fontName)
                 });
                 dd.text('success loading');
             }
