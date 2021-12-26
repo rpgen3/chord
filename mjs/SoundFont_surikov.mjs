@@ -76,7 +76,7 @@ const findZone = (zones, pitchs) => {
         const zone = zones[i];
         if (v < zone.keyRangeLow || v > zone.keyRangeHigh + 1) continue;
         set.delete(v);
-        map.set(v, zones[i]);
+        map.set(v, {...zones[i]});
     }
     return Promise.all([...map].map(async ([k, v]) => {
         await adjustZone(v)
