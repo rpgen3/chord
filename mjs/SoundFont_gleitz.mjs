@@ -14,11 +14,16 @@ export class SoundFont_gleitz {
     static toURL(fontName){
         return `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`;
     }
-    static async load({fontName, url, isDrum = false}){
+    static async load({
+        ctx = this.ctx,
+        fontName,
+        url,
+        isDrum = false
+    }){
         const {Soundfont} = window.MIDI;
         if(!(fontName in Soundfont)) await getScript(url);
         if(!(fontName in Soundfont)) throw 'SoundFont is not found.';
-        const {fonts, ctx} = this;
+        const {fonts} = this;
         if(!fonts.has(fontName)) {
             let ch = -1;
             const bufs = new Map(await Promise.all(
