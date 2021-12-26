@@ -25,12 +25,12 @@ export class SoundFont_surikov {
         if(!fonts.has(fontName)) {
             const zones = new Map;
             let ch = -1;
-            for(const [i, v] of (
+            for(const [pitch, v] of (
                 await findZone(window[fontName].zones, pitchs)
-            ).entries()) {
+            )) {
                 const {numberOfChannels} = v.buffer;
                 if(ch < numberOfChannels) ch = numberOfChannels;
-                zones.set(piano.note[i], v);
+                zones.set(piano.note[pitch - 21], v);
             }
             if(this.ch < ch) this.ch = ch;
             fonts.set(fontName, new this(zones, ch, isDrum));
