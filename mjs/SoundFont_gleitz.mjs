@@ -1,8 +1,9 @@
+// https://github.com/gleitz/midi-js-soundfonts/
 import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
 import {flat2sharp} from 'https://rpgen3.github.io/chord/mjs/flat2sharp.mjs';
 if(!('MIDI' in window)) window.MIDI = {};
 if(!('Soundfont' in window.MIDI)) window.MIDI.Soundfont = {};
-export class SoundFont {
+export class SoundFont_gleitz {
     static ctx = null;
     static fonts = new Map;
     static ch = -1;
