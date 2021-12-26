@@ -143,8 +143,18 @@
         const selectDrum = rpgen3.addSelect(html, {
             label: 'select drum'
         });
+        const selectKey = rpgen3.addSelect(html, {
+            label: 'drum key'
+        });
         const dd = $('<dd>').appendTo(html);
-        $('<dd>').appendTo(html);
+        rpgen3.addBtn(html, 'play', () => {
+            g_drum.play({
+                ctx: audioNode.ctx,
+                destination: gainNodeNote,
+                note: selectKey()
+            });
+            setTimeout(() => record.close(), 500);
+        }).addClass('btn');
         const inputVolume = rpgen3.addInputNum(html, {
             label: 'drum volume',
             save: true
@@ -180,6 +190,7 @@
                     ));
                 }
                 g_drum.font = drums.get(id);
+                selectKey.update(g_drum.font.keys());
                 dd.text('success loading');
             }
             catch {
