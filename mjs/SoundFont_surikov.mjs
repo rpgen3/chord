@@ -13,6 +13,7 @@ export class SoundFont_surikov {
         return `https://surikov.github.io/webaudiofontdata/sound/${fontName}.js`;
     }
     static async load({
+        ctx = this.ctx,
         fontName,
         url,
         isDrum = false,
