@@ -67,6 +67,7 @@
     let SoundFont = null,
         sf = null;
     const notSelected = 'not selected';
+    let gainNodeNote = {gain: {}};
     {
         const {html} = addHideArea('load SoundFont');
         const selectAuthor = rpgen3.addSelect(html, {
@@ -117,6 +118,13 @@
             }
             e.prop('disabled', false);
         };
+        const inputVolume = rpgen3.addInputNum(html, {
+            label: 'note volume',
+            save: true
+        });
+        inputVolume.elm.on('input', () => {
+            gainNodeNote.gain.value = inputVolume() / 100;
+        }).trigger('input');
     }
     const g_drum = new class {
         constructor(){
@@ -129,6 +137,7 @@
             if(font.has(note)) font.get(note).play(v);
         }
     };
+    let gainNodeDrum = {...gainNodeNote};
     {
         const {html} = addHideArea('load drum');
         const selectDrum = rpgen3.addSelect(html, {
@@ -136,6 +145,13 @@
         });
         const dd = $('<dd>').appendTo(html);
         $('<dd>').appendTo(html);
+        const inputVolume = rpgen3.addInputNum(html, {
+            label: 'drum volume',
+            save: true
+        });
+        inputVolume.elm.on('input', () => {
+            gainNodeDrum.gain.value = inputVolume() / 100;
+        }).trigger('input');
         const surikov = SoundFonts[1],
               map = new Map(),
               drums = new Map();
@@ -219,9 +235,39 @@
         }).addClass('btn');
     }
     const playChord = (note, chord, inversion) => {
+        audioNode.init();
         const root = rpgen4.piano.note2index(note),
               a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
-        for(const v of a) sf.play({note: v});
+        for(const v of a) sf?.play({
+            destination: gainNodeNote,
+            note: v
+        });
+    };
+    const audioNode = new class {
+        constructor(){
+            this.anyNode = null;
+        }
+        init(){
+            const [a, b] = [gainNodeNote, gainNodeDrum],
+                  {ctx} = SoundFont;
+            gainNodeNote = ctx.createGain();
+            gainNodeDrum = ctx.createGain();
+            gainNodeNote.gain.value = a.gain.value;
+            gainNodeDrum.gain.value = b.gain.value;
+            this.connect();
+        }
+        connect(any = this.anyNode){
+            this.anyNode = any;
+            const {destination} = SoundFont.ctx;
+            if(any) {
+                gainNodeNote.connect(any).connect(destination);
+                gainNodeDrum.connect(any).connect(destination);
+            }
+            else {
+                gainNodeNote.connect(destination);
+                gainNodeDrum.connect(destination);
+            }
+        }
     };
     {
         const {html} = addHideArea('play MIDI');
@@ -260,6 +306,7 @@
     const playMidi = async () => {
         stopMidi();
         await record.init();
+        audioNode.init();
         startTime = SoundFont.ctx.currentTime - timeline[0].when + coolTime;
         nowIndex = 0;
         intervalId = setInterval(update);
@@ -290,8 +337,14 @@
                 when: _when,
                 duration
             };
-            if(ch === 9) g_drum.play(param);
-            else sf.play(param);
+            if(ch === 9) g_drum.play({
+                destination: gainNodeDrum,
+                ...param
+            });
+            else sf?.play({
+                destination: gainNodeNote,
+                ...param
+            });
         }
     };
     const getBPM = midi => {
@@ -416,14 +469,14 @@
                 await rpgen4.RecordWorklet.init(ctx);
                 rec = new rpgen4.RecordWorklet(p);
             }
-            SoundFont.anyNode = rec.node;
+            audioNode.connect(rec.node);
         };
         const close = () => rec?.close();
         Object.assign(record, {init, close});
         isRecord.elm.on('change', async () => {
             if(await init()) {
                 close();
-                SoundFont.anyNode = null;
+                audioNode.connect(null);
             }
         });
     }
