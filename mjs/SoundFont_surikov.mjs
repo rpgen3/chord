@@ -83,7 +83,7 @@ const findZone = (zones, pitchs) => {
     return Promise.all([...map].map(async ([k, v]) => {
         await adjustZone(v)
         await addParam(v, k);
-        return v;
+        return [k, v];
     }));
 };
 const adjustZone = async zone => {
