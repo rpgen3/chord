@@ -13,7 +13,12 @@ export class SoundFont_surikov {
     static toURL(fontName){
         return `https://surikov.github.io/webaudiofontdata/sound/${fontName}.js`;
     }
-    static async load({fontName, url, isDrum = false}){
+    static async load({
+        fontName,
+        url,
+        isDrum = false,
+        pitchs = [...piano.note.keys()].map(v => v + 21)
+    }){
         if(!(fontName in window)) await getScript(url);
         if(!(fontName in window)) throw 'SoundFont is not found.';
         const {fonts} = this;
@@ -21,7 +26,7 @@ export class SoundFont_surikov {
             const zones = new Map;
             let ch = -1;
             for(const [i, v] of (
-                await findZone(window[fontName].zones, [...piano.note.keys()].map(v => v + 21))
+                await findZone(window[fontName].zones, pitchs)
             ).entries()) {
                 const {numberOfChannels} = v.buffer;
                 if(ch < numberOfChannels) ch = numberOfChannels;
@@ -77,7 +82,7 @@ const findZone = (zones, pitchs) => {
     }
     return Promise.all([...map].map(async ([k, v]) => {
         await adjustZone(v)
-        await addParam(k, v);
+        await addParam(v, k);
         return v;
     }));
 };
@@ -113,7 +118,7 @@ const adjustZone = async zone => {
         ['sustain', 0]
     ]) if(Number.isNaN(Number(zone[k]))) zone[k] = v;
 };
-const addParam = (pitch, zone) => {
+const addParam = (zone, pitch) => {
     const {
         originalPitch,
         keyRangeLow,
