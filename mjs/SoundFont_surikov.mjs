@@ -10,9 +10,6 @@ export class SoundFont_surikov {
         this.ctx?.close();
         this.ctx = new AudioContext();
     }
-    static toFontName(fontName, isDrum = false){
-        return `_${isDrum ? 'drum' : 'tone'}_${fontName}`;
-    }
     static toURL(fontName){
         return `https://surikov.github.io/webaudiofontdata/sound/${fontName}.js`;
     }
