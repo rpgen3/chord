@@ -84,10 +84,13 @@
         const selectFont = rpgen3.addSelect(html, {
             label: 'select SoundFont'
         });
-        selectAPI.elm.on('change', () => {
-            const i = selectAPI();
+        selectAPI.elm.on('change', async () => {
+            const i = selectAPI(),
+                  list = await fetchList(`fontName_${authorNames[i]}`);
+            selectFont.update([notSelected, ...(
+                i ? list.map(v => v.split(' ').reverse()) : list
+            )], notSelected);
             SoundFont = SoundFonts[i];
-            fetchList(`fontName_${authorNames[i]}`).then(v => selectFont.update([notSelected, ...v], notSelected));
         }).trigger('change');
         let nowFont = null;
         selectFont.elm.on('change', () => {
@@ -111,7 +114,9 @@
             dd.text('now loading');
             try {
                 sf = await SoundFont.load({
-                    fontName: SoundFont.toFontName(fontName),
+                    fontName: SoundFont.toFontName(
+                        selectAPI() ? `${fontName}_FluidR3_GM` : fontName
+                    ),
                     url: SoundFont.toURL(fontName)
                 });
                 dd.text('success loading');
