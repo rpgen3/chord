@@ -118,47 +118,59 @@
             e.prop('disabled', false);
         };
     }
+    const g_drum = new class {
+        constructor(){
+            this.font = null;
+        }
+        play(v){
+            const {font} = this;
+            if(!font) return;
+            const {note} = v;
+            if(font.has(note)) font.get(note).play(v);
+        }
+    };
     {
         const {html} = addHideArea('load drum');
         const selectDrum = rpgen3.addSelect(html, {
             label: 'select drum'
         });
+        const dd = $('<dd>').appendTo(html);
+        $('<dd>').appendTo(html);
         const surikov = SoundFonts[1],
               map = new Map(),
               drums = new Map();
         selectDrum.elm.on('change', async () => {
             if(!surikov.ctx) surikov.init();
-            const id = selectDrum();
-            if(id === notSelected) return;
-            if(!drums.has(id)) {
-                drums.set(id, new Map(
-                    await Promise.all(map.get(id).map(async key => {
-                        const fontName = `${key}_${id}_FluidR3_GM_sf2_file`;
-                        return [
-                            rpgen4.piano.note[key - 21],
-                            (...args) => surikov.load({
-                                fontName: `_drum_${fontName}`,
-                                url: `https://surikov.github.io/webaudiofontdata/sound/128${fontName}.js`,
-                                isDrum: true,
-                                pitchs: [key]
-                            }).play(...args)
-                        ];
-                    }))
-                ));
+            const e = selectDrum.elm;
+            e.prop('disabled', true);
+            dd.text('now loading');
+            try {
+                const id = selectDrum();
+                if(id === notSelected) return;
+                if(!drums.has(id)) {
+                    drums.set(id, new Map(
+                        await Promise.all(map.get(id).map(async key => {
+                            const fontName = `${key}_${id}_FluidR3_GM_sf2_file`;
+                            return [
+                                rpgen4.piano.note[key - 21],
+                                await surikov.load({
+                                    fontName: `_drum_${fontName}`,
+                                    url: `https://surikov.github.io/webaudiofontdata/sound/128${fontName}.js`,
+                                    isDrum: true,
+                                    pitchs: [key]
+                                })
+                            ];
+                        }))
+                    ));
+                }
+                g_drum.font = drums.get(id);
+                dd.text('success loading');
             }
-            g_drum.font = drums.get(id);
+            catch {
+                dd.text('failed loading');
+            }
+            e.prop('disabled', false);
         });
-        const g_drum = new class {
-            constructor(){
-                this.font = null;
-            }
-            play(args){
-                const {font} = this;
-                if(!font) return;
-                const {note} = args;
-                if(font.has(note)) font.get(note).play(args);
-            }
-        };
         (async () => {
             const res = await fetch('https://surikov.github.io/webaudiofontdata/sf2/list.txt'),
                   str = await res.text();
@@ -167,7 +179,7 @@
                 if(!map.has(id)) map.set(id, []);
                 map.get(id).push(key);
             }
-            selectDrum.update([notSelected, ...map.keys()], notSelected);
+            selectDrum.update([notSelected, ...[...map.keys()].sort((a, b) => a - b)], notSelected);
         })();
     }
     {
@@ -252,7 +264,6 @@
         nowIndex = 0;
         intervalId = setInterval(update);
         update();
-        window.t = timeline;
     };
     const stopMidi = () => {
         clearInterval(intervalId);
