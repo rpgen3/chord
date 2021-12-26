@@ -11,7 +11,7 @@ export class SoundFont_surikov {
         this.ctx = new AudioContext();
     }
     static toFontName(fontName, isDrum = false){
-        return `${isDrum ? '_drum' : '_tone'}_${fontName}_sf2_file`;
+        return `_${isDrum ? 'drum' : 'tone'}_${fontName}_sf2_file`;
     }
     static toURL(fontName){
         return `https://surikov.github.io/webaudiofontdata/sound/${fontName}_sf2_file.js`;
