@@ -7,7 +7,6 @@ export class SoundFont_gleitz {
     static ctx = null;
     static fonts = new Map;
     static ch = -1;
-    static anyNode = null; // user custom
     static init(){ // must done after user gesture
         this.ctx?.close();
         this.ctx = new AudioContext();
@@ -45,6 +44,7 @@ export class SoundFont_gleitz {
     }
     play({
         ctx = this.constructor.ctx,
+        destination = ctx.destination,
         note = 'C4',
         volume = 1.0,
         when = 0.0,
@@ -60,10 +60,7 @@ export class SoundFont_gleitz {
         src.buffer = buf;
         g.gain.value = volume;
         if(!isDrum) g.gain.linearRampToValueAtTime(0, end);
-        src.connect(g);
-        const {anyNode} = this.constructor;
-        if(anyNode) g.connect(anyNode).connect(ctx.destination);
-        else g.connect(ctx.destination);
+        src.connect(g).connect(destination);
         src.start(_when);
         src.stop(end);
     }
