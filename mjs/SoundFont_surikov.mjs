@@ -26,7 +26,7 @@ export class SoundFont_surikov {
             const zones = new Map;
             let ch = -1;
             for(const [pitch, v] of (
-                await findZone(window[fontName].zones, pitchs)
+                await findZone(ctx, window[fontName].zones, pitchs)
             )) {
                 const {numberOfChannels} = v.buffer;
                 if(ch < numberOfChannels) ch = numberOfChannels;
@@ -69,7 +69,7 @@ export class SoundFont_surikov {
         src.stop(end);
     }
 }
-const findZone = (zones, pitchs) => {
+const findZone = (ctx, zones, pitchs) => {
     const set = new Set(pitchs),
           map = new Map(pitchs.map(v => [v, zones[0]]));
     for (let i = zones.length - 1; i >= 0; i--) for(const v of set) {
@@ -79,15 +79,14 @@ const findZone = (zones, pitchs) => {
         map.set(v, {...zones[i]});
     }
     return Promise.all([...map].map(async ([k, v]) => {
-        await adjustZone(v)
+        await adjustZone(ctx, v)
         await addParam(v, k);
         return [k, v];
     }));
 };
-const adjustZone = async zone => {
+const adjustZone = async (ctx, zone) => {
     if (zone.buffer) return;
     zone.delay = 0;
-    const {ctx} = SoundFont_surikov;
     if (zone.sample) {
         const decoded = atob(zone.sample);
         zone.buffer = ctx.createBuffer(1, decoded.length / 2, zone.sampleRate);
