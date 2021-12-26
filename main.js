@@ -264,7 +264,7 @@
         }
         connect(any = this.anyNode){
             this.anyNode = any;
-            const {destination} = .ctx;
+            const {destination} = this.ctx;
             if(any) {
                 gainNodeNote.connect(any).connect(destination);
                 gainNodeDrum.connect(any).connect(destination);
