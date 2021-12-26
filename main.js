@@ -264,7 +264,7 @@
         }
         connect(any = this.anyNode){
             this.anyNode = any;
-            const {destination} = SoundFont.ctx;
+            const {destination} = .ctx;
             if(any) {
                 gainNodeNote.connect(any).connect(destination);
                 gainNodeDrum.connect(any).connect(destination);
