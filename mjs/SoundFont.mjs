@@ -52,14 +52,15 @@ export class SoundFont {
               src = ctx.createBufferSource(),
               g = ctx.createGain(),
               _when = when + ctx.currentTime,
-              _duration = Math.min(buf.duration, Math.max(this.min, duration));
+              end = _when + Math.min(buf.duration, Math.max(this.min, duration));
         src.buffer = buf;
         g.gain.value = volume;
-        if(!this.isDrum) g.gain.linearRampToValueAtTime(0, _when + _duration);
+        if(!this.isDrum) g.gain.linearRampToValueAtTime(0, end);
         src.connect(g);
         const {anyNode} = SoundFont;
         if(anyNode) g.connect(anyNode).connect(ctx.destination);
         else g.connect(ctx.destination);
-        src.start(_when, 0, _duration);
+        src.start(_when);
+        src.stop(end);
     }
 }
