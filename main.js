@@ -108,6 +108,7 @@
             try {
                 const _fontName = selectAuthor() ? `${fontName}_FluidR3_GM_sf2_file` : fontName;
                 sf = await SoundFont.load({
+                    ctx: audioNode.ctx,
                     fontName: selectAuthor() ? `_tone_${_fontName}` : _fontName,
                     url: SoundFont.toURL(_fontName)
                 });
@@ -170,6 +171,7 @@
                             return [
                                 rpgen4.piano.note[key - 21],
                                 await surikov.load({
+                                    ctx: audioNode.ctx,
                                     fontName: `_drum_${fontName}`,
                                     url: `https://surikov.github.io/webaudiofontdata/sound/128${fontName}.js`,
                                     isDrum: true,
@@ -239,17 +241,21 @@
         const root = rpgen4.piano.note2index(note),
               a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
         for(const v of a) sf?.play({
+            ctx: audioNode.ctx,
             destination: gainNodeNote,
             note: v
         });
     };
     const audioNode = new class {
         constructor(){
+            this.ctx = null;
             this.anyNode = null;
         }
         init(){
+            this.ctx?.close();
+            this.ctx = new AudioContext();
             const [a, b] = [gainNodeNote, gainNodeDrum],
-                  {ctx} = SoundFont;
+                  {ctx} = this;
             gainNodeNote = ctx.createGain();
             gainNodeDrum = ctx.createGain();
             gainNodeNote.gain.value = a.gain.value;
@@ -269,6 +275,7 @@
             }
         }
     };
+    window.addEventListener('click', () => audioNode.init(), {once: true});
     {
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
@@ -338,10 +345,12 @@
                 duration
             };
             if(ch === 9) g_drum.play({
+                ctx: audioNode.ctx,
                 destination: gainNodeDrum,
                 ...param
             });
             else sf?.play({
+                ctx: audioNode.ctx,
                 destination: gainNodeNote,
                 ...param
             });
