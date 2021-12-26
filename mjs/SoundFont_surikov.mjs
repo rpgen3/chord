@@ -10,6 +10,12 @@ export class SoundFont_surikov {
         this.ctx?.close();
         this.ctx = new AudioContext();
     }
+    static toFontName(fontName){
+        return `_tone_${fontName}_sf2_file`;
+    }
+    static toURL(fontName){
+        return `https://surikov.github.io/webaudiofontdata/sound/${fontName}_sf2_file.js`;
+    }
     static async load({fontName, url, isDrum = false}){
         if(!(fontName in window)) await getScript(url);
         if(!(fontName in window)) throw 'SoundFont is not found.';
