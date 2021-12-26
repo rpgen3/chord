@@ -29,7 +29,7 @@ export class SoundFont {
                 })
             ));
             if(this.ch < ch) this.ch = ch;
-            fonts.set(fontName, new SoundFont(bufs, ch, isDrum));
+            fonts.set(fontName, new this(bufs, ch, isDrum));
         }
         return fonts.get(fontName);
     }
