@@ -38,18 +38,11 @@
         'container',
         'btn'
     ].map(v => `https://rpgen3.github.io/spatialFilter/css/${v}.css`).map(rpgen3.addCSS);
-    const fetchList = (() => {
-        const m = new Map;
-        return async ttl => {
-            if(!m.has(ttl)) {
-                const res = await fetch(`https://rpgen3.github.io/chord/list/${ttl}.txt`),
-                      str = await res.text(),
-                      v = str.trim().split('\n');
-                m.set(ttl, v);
-            }
-            return m.get(ttl);
-        };
-    })();
+    const fetchList = async ttl => {
+        const res = await fetch(`https://rpgen3.github.io/chord/list/${ttl}.txt`),
+              str = await res.text();
+        return str.trim().split('\n');
+    };
     const hideTime = 500;
     const addHideArea = (label, parentNode = main) => {
         const html = $('<div>').addClass('container').appendTo(parentNode);
@@ -94,12 +87,9 @@
             selectFont.update(_list, notSelected);
             SoundFont = SoundFonts[i];
         }).trigger('change');
-        let nowFont = null;
         selectFont.elm.on('change', () => {
             const v = selectFont();
-            if(v === notSelected || v === nowFont) return;
-            nowFont = v;
-            loadSF(v);
+            if(v !== notSelected) loadSF(v);
         });
         const input = rpgen3.addInputStr(html, {
             label: 'search SoundFont',
@@ -115,9 +105,9 @@
             e.prop('disabled', true);
             dd.text('now loading');
             try {
-                const _fontName = selectAuthor() ? `${fontName}_FluidR3_GM` : fontName;
+                const _fontName = selectAuthor() ? `${fontName}_FluidR3_GM_sf2_file` : fontName;
                 sf = await SoundFont.load({
-                    fontName: SoundFont.toFontName(_fontName),
+                    fontName: selectAuthor() ? `_tone_${_fontName}` : _fontName,
                     url: SoundFont.toURL(_fontName)
                 });
                 dd.text('success loading');
@@ -127,6 +117,58 @@
             }
             e.prop('disabled', false);
         };
+    }
+    {
+        const {html} = addHideArea('load drum');
+        const selectDrum = rpgen3.addSelect(html, {
+            label: 'select drum'
+        });
+        const surikov = SoundFonts[1],
+              map = new Map(),
+              drums = new Map();
+        selectDrum.elm.on('change', async () => {
+            if(!surikov.ctx) surikov.init();
+            const id = selectDrum();
+            if(id === notSelected) return;
+            if(!drums.has(id)) {
+                drums.set(id, new Map(
+                    await Promise.all(map.get(id).map(async key => {
+                        const fontName = `${key}_${id}_FluidR3_GM_sf2_file`;
+                        return [
+                            rpgen4.piano.note[key - 21],
+                            (...args) => surikov.load({
+                                fontName: `_drum_${fontName}`,
+                                url: `https://surikov.github.io/webaudiofontdata/sound/128${fontName}.js`,
+                                isDrum: true,
+                                pitchs: [key]
+                            }).play(...args)
+                        ];
+                    }))
+                ));
+            }
+            g_drum.font = drums.get(id);
+        });
+        const g_drum = new class {
+            constructor(){
+                this.font = null;
+            }
+            play(args){
+                const {font} = this;
+                if(!font) return;
+                const {note} = args;
+                if(font.has(note)) font.get(note).play(args);
+            }
+        };
+        (async () => {
+            const res = await fetch('https://surikov.github.io/webaudiofontdata/sf2/list.txt'),
+                  str = await res.text();
+            for(const v of str.match(/128[0-9]+_[0-9]+_FluidR3_GM_sf2_file.js/g)) {
+                const [_, key, id] = v.match(/128([0-9]+)_([0-9]+)_/);
+                if(!map.has(id)) map.set(id, []);
+                map.get(id).push(key);
+            }
+            selectDrum.update([notSelected, ...map.keys()], notSelected);
+        })();
     }
     {
         const {html} = addHideArea('check code');
@@ -178,11 +220,9 @@
             Array(2).fill(notSelected),
             ...v.map(v => v.split(' ').reverse())
         ], notSelected));
-        let nowMidi = null;
         selectMidi.elm.on('change', async () => {
             const v = selectMidi();
-            if(v === notSelected || v === nowMidi) return;
-            nowMidi = v;
+            if(v === notSelected) return;
             const e = selectMidi.elm.add(inputFile);
             e.prop('disabled', true);
             parseMidi(MidiParser.parse(rpgen3.img2arr(
@@ -233,12 +273,14 @@
             if(_when > planTime) break;
             nowIndex++;
             if(_when < 0) continue;
-            sf.play({
+            const param = {
                 note,
                 volume,
                 when: _when,
                 duration
-            });
+            };
+            if(ch === 9) g_drum.play(param);
+            else sf.play(param);
         }
     };
     const getBPM = midi => {
@@ -264,7 +306,7 @@
             let currentTime = 0;
             for(const {deltaTime, type, data, channel} of event) { // 全noteを回収
                 currentTime += deltaTime;
-                if(type !== 8 && type !== 9 || channel === 9) continue;
+                if(type !== 8 && type !== 9) continue;
                 const [note, velocity] = data,
                       isNoteOFF = type === 8 || !velocity;
                 if(now.has(note) && isNoteOFF) {
