@@ -89,7 +89,7 @@
                   list = await fetchList(`fontName_${authorNames[i]}`),
                   _list = i ? [
                       [notSelected, notSelected],
-                      ...list.map(v => [v.slice(0, 4), v.slice(4)].reverse())
+                      ...list.map(v => [v.slice(4), v.slice(0, 4)])
                   ] : [notSelected, ...list];
             selectFont.update(_list, notSelected);
             SoundFont = SoundFonts[i];
