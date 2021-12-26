@@ -258,7 +258,6 @@
     const audioNode = new class {
         constructor(){
             this.ctx = null;
-            this.anyNode = null;
         }
         init(){
             this.ctx?.close();
@@ -271,12 +270,11 @@
             gainNodeDrum.gain.value = b.gain.value;
             this.connect();
         }
-        connect(any = this.anyNode){
-            this.anyNode = any;
+        connect(anyNode){
             const {destination} = this.ctx;
-            if(any) {
-                gainNodeNote.connect(any).connect(destination);
-                gainNodeDrum.connect(any).connect(destination);
+            if(anyNode) {
+                gainNodeNote.connect(anyNode).connect(destination);
+                gainNodeDrum.connect(anyNode).connect(destination);
             }
             else {
                 gainNodeNote.connect(destination);
@@ -322,7 +320,6 @@
     const playMidi = async () => {
         stopMidi();
         await record.init();
-        audioNode.init();
         startTime = audioNode.ctx.currentTime - timeline[0].when + coolTime;
         nowIndex = 0;
         intervalId = setInterval(update);
@@ -330,7 +327,7 @@
     };
     const stopMidi = () => {
         clearInterval(intervalId);
-        for(const v of SoundFonts) v.init();
+        audioNode.init();
     };
     let startTime = 0,
         endTime = 0,
@@ -494,7 +491,7 @@
         isRecord.elm.on('change', async () => {
             if(await init()) {
                 close();
-                audioNode.connect(null);
+                audioNode.connect();
             }
         });
     }
