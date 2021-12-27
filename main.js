@@ -60,8 +60,8 @@
         });
     };
     const authorNames = [
-        'gleitz',
-        'surikov'
+        'surikov',
+        'gleitz'
     ];
     const SoundFonts = authorNames.map(v => rpgen4[`SoundFont_${v}`]);
     let SoundFont = null,
@@ -445,8 +445,8 @@
             label: 'API',
             save: true,
             list: {
-                'ScriptProcessor': true,
-                'AudioWorklet': false
+                'AudioWorklet': true,
+                'ScriptProcessor': false
             }
         });
         const inputCh = rpgen3.addSelect(html, {
@@ -479,11 +479,11 @@
             if(!isRecord()) return true;
             const {ctx} = audioNode;
             const p = {ctx, ch: inputCh() ? inputCh() : SoundFont.ch};
-            if(selectAPI()) rec = new rpgen4.Record(p);
-            else {
+            if(selectAPI()) {
                 await rpgen4.RecordWorklet.init(ctx);
                 rec = new rpgen4.RecordWorklet(p);
             }
+            else rec = new rpgen4.Record(p);
             audioNode.connect(rec.node);
         };
         const close = () => rec?.close();
