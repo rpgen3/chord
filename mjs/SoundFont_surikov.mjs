@@ -2,22 +2,17 @@
 import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
 import {piano} from 'https://rpgen3.github.io/midi/mjs/piano.mjs';
 export class SoundFont_surikov {
-    static ctx = null;
     static fonts = new Map;
     static ch = -1;
-    static init(){ // must done after user gesture
-        this.ctx?.close();
-        this.ctx = new AudioContext();
-    }
     static toURL(fontName){
         return `https://surikov.github.io/webaudiofontdata/sound/${fontName}.js`;
     }
     static async load({
-        ctx = this.ctx,
+        ctx,
         fontName,
         url,
         isDrum = false,
-        pitchs = [...piano.note.keys()].map(v => v + 21)
+        pitchs
     }){
         if(!(fontName in window)) await getScript(url);
         if(!(fontName in window)) throw 'SoundFont is not found.';
@@ -43,7 +38,7 @@ export class SoundFont_surikov {
         this.isDrum = isDrum;
     }
     play({
-        ctx = this.constructor.ctx,
+        ctx,
         destination = ctx.destination,
         note = 'C4',
         volume = 1.0,
@@ -69,14 +64,20 @@ export class SoundFont_surikov {
         src.stop(end);
     }
 }
-const findZone = (ctx, zones, pitchs) => {
+const findZone = (ctx, zones, pitchs = []) => {
+    if(!pitchs.length) for(const zone of zones) {
+        const low = zone.keyRangeLow | 0,
+              high = zone.keyRangeHigh | 0;
+        if(low > high) continue;
+        for(let i = low; i <= high; i++) pitchs.push(i);
+    }
     const set = new Set(pitchs),
           map = new Map(pitchs.map(v => [v, zones[0]]));
     for (let i = zones.length - 1; i >= 0; i--) for(const v of set) {
         const zone = zones[i];
         if (v < zone.keyRangeLow || v > zone.keyRangeHigh + 1) continue;
         set.delete(v);
-        map.set(v, {...zones[i]});
+        map.set(v, {...zone});
     }
     return Promise.all([...map].map(async ([k, v]) => {
         await adjustZone(ctx, v)
