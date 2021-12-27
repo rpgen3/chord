@@ -25,8 +25,8 @@ export const SoundFont_surikov_list = new class {
             else {
                 const a = s.split('_'),
                       [id] = a,
-                      sf = a.slice(1).join('_').slice(0, -3);
-                touch(tone, sf, Set).add(id);
+                      font = a.slice(1).join('_').slice(0, -3);
+                touch(tone, font, Set).add(id);
             }
         }
         for(const callback of this.callback) callback();
