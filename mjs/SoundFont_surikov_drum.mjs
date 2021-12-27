@@ -13,7 +13,7 @@ export const SoundFont_surikov_drum = new class {
         const map = touch(touch(this.fonts, font, Map), id, Map);
         if(!map.size) {
             for(const [tone, sf] of (
-                await Promise.all(keys.map(async key => {
+                await Promise.all([...keys].map(async key => {
                     const fontName = `${key}_${id}_${font}`;
                     return [
                         piano.note[key - 21],
