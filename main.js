@@ -157,18 +157,18 @@
             const font = selectFont(),
                   id = selectId();;
             if(font === notSelected || id === notSelected) return;
-            selectKey.update([notSelected, ...SoundFont_surikov_list.drum.get(font).get(id)], notSelected);
-            load(font, id);
+            const keys = SoundFont_surikov_list.drum.get(font).get(id);
+            selectKey.update([notSelected, ...keys], notSelected);
+            load(font, id, keys);
         });
-        const load = async (font, id) => {
+        const load = async (font, id, keys) => {
             const e = [selectFont, selectId, selectKey].map(v => v.elm).reduce((p, x) => p.add(x));
             e.prop('disabled', true);
             dd.text('now loading');
             try {
                 await rpgen4.SoundFont_surikov_drum.load({
                     ctx: audioNode.ctx,
-                    font,
-                    id
+                    font, id, keys
                 });
                 dd.text('success loading');
             }
