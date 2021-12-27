@@ -31,7 +31,8 @@
             'RecordWorklet',
             'toWAV',
             'SoundFont_gleitz',
-            'SoundFont_surikov'
+            'SoundFont_surikov',
+            'SoundFont_surikov_list'
         ].map(v => `https://rpgen3.github.io/chord/mjs/${v}.mjs`)
     ].flat());
     [
@@ -59,67 +60,75 @@
             }
         });
     };
-    const authorNames = [
-        'surikov',
-        'gleitz'
-    ];
-    const SoundFonts = authorNames.map(v => rpgen4[`SoundFont_${v}`]);
+    const notSelected = 'not selected',
+          {SoundFont_surikov_list} = rpgen4;
     let SoundFont = null,
-        sf = null;
-    const notSelected = 'not selected';
-    let gainNodeNote = {gain: {}};
+        sf = null,
+        gainNodeNote = {gain: {}};
     {
-        const {html} = addHideArea('load SoundFont');
+        const {html} = addHideArea('load SoundFont'),
+              surikov = 'surikov',
+              gleitz = 'gleitz';
         const selectAuthor = rpgen3.addSelect(html, {
             label: 'author',
             save: true,
-            list: [...authorNames.entries()].map(v => v.reverse())
+            list: [surikov, gleitz]
         });
         const selectFont = rpgen3.addSelect(html, {
             label: 'select SoundFont'
         });
+        const selectInstrument = rpgen3.addSelect(html, {
+            label: 'select instrument'
+        });
         selectAuthor.elm.on('change', async () => {
-            const i = selectAuthor(),
-                  list = await fetchList(`fontName_${authorNames[i]}`),
-                  _list = i ? [
-                      [notSelected, notSelected],
-                      ...list.map(v => [v.slice(4), v.slice(0, 4)])
-                  ] : [notSelected, ...list];
-            selectFont.update(_list, notSelected);
-            SoundFont = SoundFonts[i];
+            const author = selectAuthor();
+            if(author === surikov) {
+                selectFont.elm.show(hideTime);
+                selectFont.update([notSelected, ...SoundFont_surikov_list.tone.keys()], notSelected);
+                selectInstrument.update([notSelected], notSelected);
+            }
+            else {
+                selectFont.elm.hide(hideTime);
+                selectInstrument.update([notSelected, ...await fetchList(`fontName_${author}`)], notSelected);
+            }
+            SoundFont = rpgen4[`SoundFont_${author}`];
         }).trigger('change');
-        selectFont.elm.on('change', () => {
-            const v = selectFont();
-            if(v !== notSelected) loadSF(v);
+        SoundFont_surikov_list.onload(() => {
+            selectAuthor.elm.trigger('change');
         });
-        const input = rpgen3.addInputStr(html, {
-            label: 'search SoundFont',
-            save: true
+        selectFont.elm.on('change', async () => {
+            const font = selectFont();
+            if(font === notSelected) return;
+            const map = new Map((
+                await fetchList(`fontName_${surikov}`)
+            ).map(v => [v.slice(0, 4), v.slice(4)]));
+            selectInstrument.update([
+                [notSelected, notSelected],
+                ...[...SoundFont_surikov_list.tone.get(font).keys()].map(id => [map.has(id) ? map.get(id) : id, id])
+            ], notSelected);
         });
-        input.elm.prop('placeholder', 'see source');
-        const dd = $('<dd>').appendTo(html);
-        rpgen3.addA(dd, 'https://github.com/gleitz/midi-js-soundfonts/tree/gh-pages/FluidR3_GM', 'source');
-        const btn = rpgen3.addBtn(html, 'search', () => loadSF(input())).addClass('btn');
-        const loadSF = async fontName => {
-            const e = selectAuthor.elm.add(selectFont.elm).add(input.elm).add(btn);
+        selectInstrument.elm.on('change', async () => {
+            const ins = selectInstrument();
+            if(ins === notSelected) return;
+            const e = selectAuthor.elm.add(selectFont.elm);
             e.prop('disabled', true);
-            dd.text('now loading');
             try {
-                const _fontName = selectAuthor() ? `${fontName}_FluidR3_GM_sf2_file` : fontName;
+                const author = selectAuthor(),
+                      fontName = author === surikov ? `${ins}_${selectFont()}` : ins;
                 sf = await SoundFont.load({
                     ctx: audioNode.ctx,
-                    fontName: selectAuthor() ? `_tone_${_fontName}` : _fontName,
-                    url: SoundFont.toURL(_fontName)
+                    fontName: author === surikov ? `_tone_${fontName}` : fontName,
+                    url: SoundFont.toURL(fontName)
                 });
-                dd.text('success loading');
             }
-            catch {
-                dd.text('failed loading');
+            catch (err) {
+                console.error(err);
+                alert(err);
             }
             e.prop('disabled', false);
-        };
+        });
         const inputVolume = rpgen3.addInputNum(html, {
-            label: 'note volume',
+            label: 'sound volume',
             save: true
         });
         inputVolume.elm.on('input', () => {
@@ -162,7 +171,7 @@
         inputVolume.elm.on('input', () => {
             gainNodeDrum.gain.value = inputVolume() / 100;
         }).trigger('input');
-        const surikov = SoundFonts[1],
+        const surikov = rpgen4.SoundFont_surikov,
               map = new Map(),
               drums = new Map();
         selectDrum.elm.on('change', async () => {
@@ -193,22 +202,17 @@
                 selectKey.update(g_drum.font.keys());
                 dd.text('success loading');
             }
-            catch {
+            catch (err) {
+                console.error(err);
                 dd.text('failed loading');
             }
             e.prop('disabled', false);
         });
-        (async () => {
-            const res = await fetch('https://surikov.github.io/webaudiofontdata/sf2/list.txt'),
-                  str = await res.text();
-            for(const v of str.match(/128[0-9]+_[0-9]+_FluidR3_GM_sf2_file.js/g)) {
-                const [_, key, id] = v.match(/128([0-9]+)_([0-9]+)_/);
-                if(!map.has(id)) map.set(id, []);
-                map.get(id).push(key);
-            }
+        SoundFont_surikov_list.onload(() => {
             selectDrum.update([notSelected, ...[...map.keys()].sort((a, b) => a - b)], notSelected);
-        })();
+        });
     }
+    SoundFont_surikov_list.init();
     {
         const {html} = addHideArea('check code');
         const selectOctave = rpgen3.addSelect(html, {
