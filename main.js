@@ -32,7 +32,8 @@
             'toWAV',
             'SoundFont_gleitz',
             'SoundFont_surikov',
-            'SoundFont_surikov_list'
+            'SoundFont_surikov_list',
+            'SoundFont_surikov_drum'
         ].map(v => `https://rpgen3.github.io/chord/mjs/${v}.mjs`)
     ].flat());
     [
@@ -93,9 +94,7 @@
             }
             SoundFont = rpgen4[`SoundFont_${author}`];
         }).trigger('change');
-        SoundFont_surikov_list.onload(() => {
-            selectAuthor.elm.trigger('change');
-        });
+        SoundFont_surikov_list.onload(() => selectAuthor.elm.trigger('change'));
         selectFont.elm.on('change', async () => {
             const font = selectFont();
             if(font === notSelected) return;
@@ -110,7 +109,7 @@
         selectInstrument.elm.on('change', async () => {
             const ins = selectInstrument();
             if(ins === notSelected) return;
-            const e = selectAuthor.elm.add(selectFont.elm);
+            const e = [selectAuthor, selectFont, selectInstrument].map(v => v.elm).reduce((p, x) => p.add(x));
             e.prop('disabled', true);
             try {
                 const author = selectAuthor(),
@@ -135,32 +134,57 @@
             gainNodeNote.gain.value = inputVolume() / 100;
         }).trigger('input');
     }
-    const g_drum = new class {
-        constructor(){
-            this.font = null;
-        }
-        play(v){
-            const {font} = this;
-            if(!font) return;
-            const {note} = v;
-            if(font.has(note)) font.get(note).play(v);
-        }
-    };
     let gainNodeDrum = {...gainNodeNote};
     {
         const {html} = addHideArea('load drum');
-        const selectDrum = rpgen3.addSelect(html, {
+        const selectFont = rpgen3.addSelect(html, {
+            label: 'select SoundFont'
+        });
+        const selectId = rpgen3.addSelect(html, {
             label: 'select drum'
         });
         const selectKey = rpgen3.addSelect(html, {
             label: 'drum key'
         });
+        SoundFont_surikov_list.onload(() => {
+            selectFont.update([notSelected, ...SoundFont_surikov_list.drum.keys()], notSelected);
+        });
+        selectFont.elm.on('change', () => {
+            const font = selectFont();
+            if(font === notSelected) return;
+            selectId.update([notSelected, ...SoundFont_surikov_list.drum.get(font).keys()], notSelected);
+        });
+        selectId.elm.on('change', () => {
+            const font = selectFont(),
+                  id = selectId();;
+            if(font === notSelected || id === notSelected) return;
+            selectKey.update([notSelected, ...SoundFont_surikov_list.drum.get(font).get(id)], notSelected);
+            load(font, id);
+        });
+        const load = async (font, id) => {
+            const e = [selectFont, selectId, selectKey].map(v => v.elm).reduce((p, x) => p.add(x));
+            e.prop('disabled', true);
+            dd.text('now loading');
+            try {
+                await rpgen4.SoundFont_surikov_drum.load({
+                    ctx: audioNode.ctx,
+                    font,
+                    id
+                });
+                dd.text('success loading');
+            }
+            catch (err) {
+                console.error(err);
+                dd.text('failed loading');
+            }
+            e.prop('disabled', false);
+        };
         const dd = $('<dd>').appendTo(html);
         rpgen3.addBtn(html, 'play', () => {
-            g_drum.play({
+            rpgen4.SoundFont_surikov_drum.play({
                 ctx: audioNode.ctx,
                 destination: gainNodeNote,
-                note: selectKey()
+                note: rpgen4.piano.note[Number(selectKey()) - 21]
             });
             setTimeout(() => record.close(), 500);
         }).addClass('btn');
@@ -171,46 +195,6 @@
         inputVolume.elm.on('input', () => {
             gainNodeDrum.gain.value = inputVolume() / 100;
         }).trigger('input');
-        const surikov = rpgen4.SoundFont_surikov,
-              map = new Map(),
-              drums = new Map();
-        selectDrum.elm.on('change', async () => {
-            const e = selectDrum.elm;
-            e.prop('disabled', true);
-            dd.text('now loading');
-            try {
-                const id = selectDrum();
-                if(id === notSelected) return;
-                if(!drums.has(id)) {
-                    drums.set(id, new Map(
-                        await Promise.all(map.get(id).map(async key => {
-                            const fontName = `${key}_${id}_FluidR3_GM_sf2_file`;
-                            return [
-                                rpgen4.piano.note[key - 21],
-                                await surikov.load({
-                                    ctx: audioNode.ctx,
-                                    fontName: `_drum_${fontName}`,
-                                    url: `https://surikov.github.io/webaudiofontdata/sound/128${fontName}.js`,
-                                    isDrum: true,
-                                    pitchs: [key]
-                                })
-                            ];
-                        }))
-                    ));
-                }
-                g_drum.font = drums.get(id);
-                selectKey.update(g_drum.font.keys());
-                dd.text('success loading');
-            }
-            catch (err) {
-                console.error(err);
-                dd.text('failed loading');
-            }
-            e.prop('disabled', false);
-        });
-        SoundFont_surikov_list.onload(() => {
-            selectDrum.update([notSelected, ...[...map.keys()].sort((a, b) => a - b)], notSelected);
-        });
     }
     SoundFont_surikov_list.init();
     {
@@ -354,7 +338,7 @@
                 when: _when,
                 duration
             };
-            if(ch === 9) g_drum.play({
+            if(ch === 9) rpgen4.SoundFont_surikov_drum.play({
                 ctx: audioNode.ctx,
                 destination: gainNodeDrum,
                 ...param
