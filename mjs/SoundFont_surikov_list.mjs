@@ -6,6 +6,10 @@ export const SoundFont_surikov_list = new class {
     constructor(){
         this.tone = new Map;
         this.drum = new Map;
+        this.callback = new Set;
+    }
+    onload(callback){
+        this.callback.add(callback);
     }
     async init(){
         const res = await fetch('https://surikov.github.io/webaudiofontdata/sf2/list.txt'),
@@ -25,5 +29,7 @@ export const SoundFont_surikov_list = new class {
                 touch(tone, sf, Set).add(id);
             }
         }
+        for(const callback of this.callback) callback();
+        this.callback.clear();
     }
 };
