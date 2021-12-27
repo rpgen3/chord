@@ -19,8 +19,8 @@ export const SoundFont_surikov_list = new class {
             if(s.slice(0, 3) === '128') {
                 const a = s.slice(3).split('_'),
                       [key, id] = a,
-                      sf = a.slice(2).join('_').slice(0, -3);
-                touch(touch(drum, sf, Map), id, Set).add(key);
+                      font = a.slice(2).join('_').slice(0, -3);
+                touch(touch(drum, font, Map), id, Set).add(key);
             }
             else {
                 const a = s.split('_'),
