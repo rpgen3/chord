@@ -4,18 +4,13 @@ import {flat2sharp} from 'https://rpgen3.github.io/chord/mjs/flat2sharp.mjs';
 if(!('MIDI' in window)) window.MIDI = {};
 if(!('Soundfont' in window.MIDI)) window.MIDI.Soundfont = {};
 export class SoundFont_gleitz {
-    static ctx = null;
     static fonts = new Map;
     static ch = -1;
-    static init(){ // must done after user gesture
-        this.ctx?.close();
-        this.ctx = new AudioContext();
-    }
     static toURL(fontName){
         return `https://gleitz.github.io/midi-js-soundfonts/FluidR3_GM/${fontName}-mp3.js`;
     }
     static async load({
-        ctx = this.ctx,
+        ctx,
         fontName,
         url,
         isDrum = false
@@ -48,7 +43,7 @@ export class SoundFont_gleitz {
         this.min = 0.5;
     }
     play({
-        ctx = this.constructor.ctx,
+        ctx,
         destination = ctx.destination,
         note = 'C4',
         volume = 1.0,
