@@ -9,11 +9,11 @@ export const SoundFont_surikov_drum = new class {
         this.font = null;
         this.fonts = new Map;
     }
-    async load({ctx, font, id}){
+    async load({ctx, font, id, keys}){
         const map = touch(touch(this.fonts, font, Map), id, Map);
         if(!map.size) {
             for(const [tone, sf] of (
-                await Promise.all(map.get(id).map(async key => {
+                await Promise.all([...keys].map(async key => {
                     const fontName = `${key}_${id}_${font}`;
                     return [
                         piano.note[key - 21],
