@@ -30,6 +30,7 @@
             'Record',
             'RecordWorklet',
             'toWAV',
+            'audioNode',
             'SoundFont_gleitz',
             'SoundFont_surikov',
             'SoundFont_surikov_list',
@@ -62,10 +63,9 @@
         });
     };
     const notSelected = 'not selected',
-          {SoundFont_surikov_list} = rpgen4;
+          {SoundFont_surikov_list, audioNode} = rpgen4;
     let SoundFont = null,
-        sf = null,
-        gainNodeNote = {gain: {}};
+        sf = null;
     {
         const {html} = addHideArea('load SoundFont'),
               surikov = 'surikov',
@@ -131,10 +131,9 @@
             save: true
         });
         inputVolume.elm.on('input', () => {
-            gainNodeNote.gain.value = inputVolume() / 100;
+            audioNode.note.gain.value = inputVolume() / 100;
         }).trigger('input');
     }
-    let gainNodeDrum = {...gainNodeNote};
     {
         const {html} = addHideArea('load drum');
         const selectFont = rpgen3.addSelect(html, {
@@ -183,7 +182,7 @@
         rpgen3.addBtn(html, 'play', () => {
             rpgen4.SoundFont_surikov_drum.play({
                 ctx: audioNode.ctx,
-                destination: gainNodeNote,
+                destination: audioNode.note,
                 note: rpgen4.piano.note[Number(selectKey()) - 21]
             });
             setTimeout(() => record.close(), 500);
@@ -193,7 +192,7 @@
             save: true
         });
         inputVolume.elm.on('input', () => {
-            gainNodeDrum.gain.value = inputVolume() / 100;
+            audioNode.drum.gain.value = inputVolume() / 100;
         }).trigger('input');
     }
     SoundFont_surikov_list.init();
@@ -239,38 +238,10 @@
               a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
         for(const v of a) sf?.play({
             ctx: audioNode.ctx,
-            destination: gainNodeNote,
+            destination: audioNode.note,
             note: v
         });
     };
-    const audioNode = new class {
-        constructor(){
-            this.ctx = null;
-        }
-        init(){
-            this.ctx?.close();
-            this.ctx = new AudioContext();
-            const [a, b] = [gainNodeNote, gainNodeDrum],
-                  {ctx} = this;
-            gainNodeNote = ctx.createGain();
-            gainNodeDrum = ctx.createGain();
-            gainNodeNote.gain.value = a.gain.value;
-            gainNodeDrum.gain.value = b.gain.value;
-            this.connect();
-        }
-        connect(anyNode){
-            const {destination} = this.ctx;
-            if(anyNode) {
-                gainNodeNote.connect(anyNode).connect(destination);
-                gainNodeDrum.connect(anyNode).connect(destination);
-            }
-            else {
-                gainNodeNote.connect(destination);
-                gainNodeDrum.connect(destination);
-            }
-        }
-    };
-    window.addEventListener('click', () => audioNode.init(), {once: true});
     {
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
@@ -340,12 +311,12 @@
             };
             if(ch === 9) rpgen4.SoundFont_surikov_drum.play({
                 ctx: audioNode.ctx,
-                destination: gainNodeDrum,
+                destination: audioNode.drum,
                 ...param
             });
             else sf?.play({
                 ctx: audioNode.ctx,
-                destination: gainNodeNote,
+                destination: audioNode.note,
                 ...param
             });
         }
