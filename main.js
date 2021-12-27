@@ -155,7 +155,7 @@
         });
         selectId.elm.on('change', () => {
             const font = selectFont(),
-                  id = selectId();;
+                  id = selectId();
             if(font === notSelected || id === notSelected) return;
             const keys = SoundFont_surikov_list.drum.get(font).get(id);
             selectKey.update([notSelected, ...keys], notSelected);
