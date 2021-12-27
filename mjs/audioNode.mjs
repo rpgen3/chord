@@ -17,9 +17,12 @@ export const audioNode = new class {
     connect(any){
         const {ctx, note, drum} = this,
               {destination} = ctx;
+        note.disconnect();
+        drum.disconnect();
         if(any) {
-            note.connect(any).connect(destination);
-            drum.connect(any).connect(destination);
+            note.connect(any);
+            drum.connect(any);
+            any.connect(destination);
         }
         else {
             note.connect(destination);
