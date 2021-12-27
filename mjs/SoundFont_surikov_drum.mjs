@@ -4,7 +4,7 @@ const touch = (map, key, ctor) => {
     if(!map.has(key)) map.set(key, new ctor);
     return map.get(key);
 };
-const SoundFont_surikov_drum = new class {
+export const SoundFont_surikov_drum = new class {
     constructor(){
         this.font = null;
         this.fonts = new Map;
