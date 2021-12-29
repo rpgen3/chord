@@ -101,8 +101,8 @@
             const map = new Map((
                 await fetchList(`fontName_${surikov}`)
             ).map(v => {
-                const a = v.split(' ');
-                return [a[0].slice(0, 3), a.slice(1).join(' ')];
+                const [a, b] = v.split(' ');
+                return [a.slice(0, 3), b];
             }));
             selectInstrument.update([
                 [notSelected, notSelected],
@@ -140,6 +140,52 @@
             audioNode.note.gain.value = inputVolume() / 100;
         }).trigger('input');
     }
+    {
+        const {html} = addHideArea('check code');
+        const selectOctave = rpgen3.addSelect(html, {
+            label: 'octave',
+            save: true,
+            list: [2, 3, 4, 5, 6],
+            value: 4
+        });
+        const selectKey = rpgen3.addSelect(html, {
+            label: 'key',
+            save: true,
+            list: (a => {
+                let n = 3;
+                while(n--) a.push(a.shift());
+                return a;
+            })(rpgen4.piano.keys.slice()),
+            value: 'C'
+        });
+        const selectChord = rpgen3.addSelect(html, {
+            label: 'code',
+            save: true,
+            list: rpgen4.chord,
+            value: 'M'
+        });
+        const selectInversion = rpgen3.addSelect(html, {
+            label: 'inversion',
+            save: true,
+            list: (max => [...Array(max * 2 + 1).keys()].map(v => v - max))(Math.max(...Object.values(rpgen4.chord).map(v => v.length))),
+            value: 0
+        });
+        $('<dd>').appendTo(html);
+        rpgen3.addBtn(html, 'play', () => {
+            playChord(selectKey() + selectOctave(), selectChord(), selectInversion());
+            setTimeout(() => record.close(), 500);
+        }).addClass('btn');
+    }
+    const playChord = (note, chord, inversion) => {
+        audioNode.init();
+        const root = rpgen4.piano.note2index(note),
+              a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
+        for(const v of a) sf?.play({
+            ctx: audioNode.ctx,
+            destination: audioNode.note,
+            note: v
+        });
+    };
     {
         const {html} = addHideArea('load drum');
         const selectFont = rpgen3.addSelect(html, {
@@ -202,52 +248,6 @@
         }).trigger('input');
     }
     SoundFont_surikov_list.init();
-    {
-        const {html} = addHideArea('check code');
-        const selectOctave = rpgen3.addSelect(html, {
-            label: 'octave',
-            save: true,
-            list: [2, 3, 4, 5, 6],
-            value: 4
-        });
-        const selectKey = rpgen3.addSelect(html, {
-            label: 'key',
-            save: true,
-            list: (a => {
-                let n = 3;
-                while(n--) a.push(a.shift());
-                return a;
-            })(rpgen4.piano.keys.slice()),
-            value: 'C'
-        });
-        const selectChord = rpgen3.addSelect(html, {
-            label: 'code',
-            save: true,
-            list: rpgen4.chord,
-            value: 'M'
-        });
-        const selectInversion = rpgen3.addSelect(html, {
-            label: 'inversion',
-            save: true,
-            list: (max => [...Array(max * 2 + 1).keys()].map(v => v - max))(Math.max(...Object.values(rpgen4.chord).map(v => v.length))),
-            value: 0
-        });
-        $('<dd>').appendTo(html);
-        rpgen3.addBtn(html, 'play', () => {
-            playChord(selectKey() + selectOctave(), selectChord(), selectInversion());
-            setTimeout(() => record.close(), 500);
-        }).addClass('btn');
-    }
-    const playChord = (note, chord, inversion) => {
-        audioNode.init();
-        const root = rpgen4.piano.note2index(note),
-              a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
-        for(const v of a) sf?.play({
-            ctx: audioNode.ctx,
-            destination: audioNode.note,
-            note: v
-        });
-    };
     {
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
