@@ -100,11 +100,14 @@
             if(font === notSelected) return;
             const map = new Map((
                 await fetchList(`fontName_${surikov}`)
-            ).map(v => [v.slice(0, 3), v.slice(5)]));
+            ).map(v => {
+                const [a, b] = v.split(' ');
+                return [a.slice(0, 3), b];
+            }));
             selectInstrument.update([
                 [notSelected, notSelected],
                 ...[...SoundFont_surikov_list.tone.get(font).keys()].map(id => {
-                    const _id = id.slice(0, -1);
+                    const _id = id.slice(0, 3);
                     return [map.has(_id) ? map.get(_id) : id, id];
                 })
             ], notSelected);
