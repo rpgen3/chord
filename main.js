@@ -101,8 +101,8 @@
             const map = new Map((
                 await fetchList(`fontName_${surikov}`)
             ).map(v => {
-                const [a, b] = v.split(' ');
-                return [a.slice(0, 3), b];
+                const a = v.split(' ');
+                return [a[0].slice(0, 3), a.slice(1).join(' ')];
             }));
             selectInstrument.update([
                 [notSelected, notSelected],
