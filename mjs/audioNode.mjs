@@ -1,8 +1,8 @@
 export const audioNode = new class {
     constructor(){
         this.ctx = null;
-        this.note = {gain: {}};
-        this.drum = {gain: {}};
+        this.note = {gain: {value: 0}};
+        this.drum = {gain: {value: 0}};
     }
     init(){
         this.ctx?.close();
