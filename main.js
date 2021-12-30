@@ -177,7 +177,6 @@
         }).addClass('btn');
     }
     const playChord = (note, chord, inversion) => {
-        audioNode.init();
         const root = rpgen4.piano.note2index(note),
               a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
         for(const v of a) sf?.play({
