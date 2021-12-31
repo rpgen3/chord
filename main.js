@@ -141,7 +141,7 @@
         }).trigger('input');
     }
     {
-        const {html} = addHideArea('check code');
+        const {html} = addHideArea('check chord');
         const selectOctave = rpgen3.addSelect(html, {
             label: 'octave',
             save: true,
@@ -159,7 +159,7 @@
             value: 'C'
         });
         const selectChord = rpgen3.addSelect(html, {
-            label: 'code',
+            label: 'chord',
             save: true,
             list: rpgen4.chord,
             value: 'M'
