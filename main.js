@@ -287,7 +287,6 @@
         startTime = audioNode.ctx.currentTime - timeline[0].when + coolTime;
         nowIndex = 0;
         intervalId = setInterval(update);
-        update();
     };
     const stopMidi = () => {
         clearInterval(intervalId);
