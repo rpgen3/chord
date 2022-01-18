@@ -1,5 +1,5 @@
 import {piano} from 'https://rpgen3.github.io/midi/mjs/piano.mjs';
-import {SoundFont_surikov} from 'https://rpgen3.github.io/chord/mjs/SoundFont_surikov.mjs';
+import {SoundFont_surikov} from 'https://rpgen3.github.io/soundfont/mjs/SoundFont_surikov.mjs';
 const touch = (map, key, ctor) => {
     if(!map.has(key)) map.set(key, new ctor);
     return map.get(key);
