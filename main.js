@@ -35,14 +35,14 @@
             'SoundFont_surikov',
             'SoundFont_surikov_list',
             'SoundFont_surikov_drum'
-        ].map(v => `https://rpgen3.github.io/chord/mjs/${v}.mjs`)
+        ].map(v => `https://rpgen3.github.io/soundfont/mjs/${v}.mjs`)
     ].flat());
     [
         'container',
         'btn'
     ].map(v => `https://rpgen3.github.io/spatialFilter/css/${v}.css`).map(rpgen3.addCSS);
     const fetchList = async ttl => {
-        const res = await fetch(`https://rpgen3.github.io/chord/list/${ttl}.txt`),
+        const res = await fetch(`https://rpgen3.github.io/soundfont/list/${ttl}.txt`),
               str = await res.text();
         return str.trim().split('\n');
     };
