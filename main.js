@@ -13,7 +13,7 @@
     const head = $('<header>').appendTo(html),
           main = $('<main>').appendTo(html),
           foot = $('<footer>').appendTo(html);
-    $('<h1>').appendTo(head).text('chord');
+    $('<h1>').appendTo(head).text('soundfont');
     const rpgen3 = await importAll([
         'random',
         'input',
