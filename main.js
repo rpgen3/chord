@@ -433,7 +433,7 @@
                 data: await rec.data,
                 sampleRate: audioNode.ctx.sampleRate,
                 bitRate: inputBitRate()
-            }), 'chord.wav');
+            }), 'soundfont.wav');
         }).addClass('btn');
         const isRecord = rpgen3.addInputBool(html, {
             label: 'start record'
