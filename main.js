@@ -25,8 +25,6 @@
         'https://rpgen3.github.io/maze/mjs/heap/Heap.mjs',
         'https://rpgen3.github.io/midi/mjs/piano.mjs',
         [
-            'chord',
-            'inversion',
             'Record',
             'RecordWorklet',
             'toWAV',
@@ -141,60 +139,12 @@
         }).trigger('input');
     }
     {
-        const {html} = addHideArea('check chord');
-        const selectOctave = rpgen3.addSelect(html, {
-            label: 'octave',
-            save: true,
-            list: [2, 3, 4, 5, 6],
-            value: 4
-        });
-        const selectKey = rpgen3.addSelect(html, {
-            label: 'key',
-            save: true,
-            list: (a => {
-                let n = 3;
-                while(n--) a.push(a.shift());
-                return a;
-            })(rpgen4.piano.keys.slice()),
-            value: 'C'
-        });
-        const selectChord = rpgen3.addSelect(html, {
-            label: 'chord',
-            save: true,
-            list: rpgen4.chord,
-            value: 'M'
-        });
-        const selectInversion = rpgen3.addSelect(html, {
-            label: 'inversion',
-            save: true,
-            list: (max => [...Array(max * 2 + 1).keys()].map(v => v - max))(Math.max(...Object.values(rpgen4.chord).map(v => v.length))),
-            value: 0
-        });
-        $('<dd>').appendTo(html);
-        rpgen3.addBtn(html, 'play', () => {
-            playChord(selectKey() + selectOctave(), selectChord(), selectInversion());
-            setTimeout(() => record.close(), 500);
-        }).addClass('btn');
-    }
-    const playChord = (note, chord, inversion) => {
-        const root = rpgen4.piano.note2index(note),
-              a = rpgen4.inversion(chord, inversion).map(v => v + root).map(v => rpgen4.piano.note[v]);
-        for(const v of a) sf?.play({
-            ctx: audioNode.ctx,
-            destination: audioNode.note,
-            note: v
-        });
-    };
-    {
         const {html} = addHideArea('load drum');
         const selectFont = rpgen3.addSelect(html, {
             label: 'select SoundFont'
         });
         const selectId = rpgen3.addSelect(html, {
             label: 'select drum'
-        });
-        const selectKey = rpgen3.addSelect(html, {
-            label: 'drum key'
         });
         SoundFont_surikov_list.onload(() => {
             selectFont.update([notSelected, ...SoundFont_surikov_list.drum.keys()], notSelected);
@@ -209,35 +159,23 @@
                   id = selectId();
             if(font === notSelected || id === notSelected) return;
             const keys = SoundFont_surikov_list.drum.get(font).get(id);
-            selectKey.update([notSelected, ...keys], notSelected);
             load(font, id, keys);
         });
         const load = async (font, id, keys) => {
-            const e = [selectFont, selectId, selectKey].map(v => v.elm).reduce((p, x) => p.add(x));
+            const e = [selectFont, selectId].map(v => v.elm).reduce((p, x) => p.add(x));
             e.prop('disabled', true);
-            dd.text('now loading');
             try {
                 await rpgen4.SoundFont_surikov_drum.load({
                     ctx: audioNode.ctx,
                     font, id, keys
                 });
-                dd.text('success loading');
             }
             catch (err) {
                 console.error(err);
-                dd.text('failed loading');
+                alert('failed loading');
             }
             e.prop('disabled', false);
         };
-        const dd = $('<dd>').appendTo(html);
-        rpgen3.addBtn(html, 'play', () => {
-            rpgen4.SoundFont_surikov_drum.play({
-                ctx: audioNode.ctx,
-                destination: audioNode.note,
-                note: rpgen4.piano.note[Number(selectKey()) - 21]
-            });
-            setTimeout(() => record.close(), 500);
-        }).addClass('btn');
         const inputVolume = rpgen3.addInputNum(html, {
             label: 'drum volume',
             save: true
