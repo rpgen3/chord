@@ -1,7 +1,6 @@
 // https://github.com/surikov/webaudiofontdata/
 import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
-import {piano} from 'https://rpgen3.github.io/midi/mjs/piano.mjs';
-export class SoundFont_surikov {
+export class SoundFont {
     static fonts = new Map;
     static ch = -1;
     static toURL(fontName){
@@ -25,7 +24,7 @@ export class SoundFont_surikov {
             )) {
                 const {numberOfChannels} = v.buffer;
                 if(ch < numberOfChannels) ch = numberOfChannels;
-                zones.set(piano.note[pitch - 21], v);
+                zones.set(pitch, v);
             }
             if(this.ch < ch) this.ch = ch;
             fonts.set(fontName, new this(zones, ch, isDrum));
@@ -40,8 +39,8 @@ export class SoundFont_surikov {
     play({
         ctx,
         destination = ctx.destination,
-        note = 'C4',
-        volume = 1.0,
+        note = 60, // C4
+        volume = 1.0, // 0.0 ~ 1.0
         when = 0.0,
         duration = 1.0
     }={}){
