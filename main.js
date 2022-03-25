@@ -31,7 +31,7 @@
             'audioNode',
         ].map(v => `https://rpgen3.github.io/soundfont/mjs/${v}.mjs`)
     ].flat());
-    const g_sf = {
+    const g_sfLib = {
         gleitz: await import('https://rpgen3.github.io/soundfont/mjs/gleitz/SoundFont.mjs'),
         surikov: await importAll([
             'SoundFont',
@@ -67,7 +67,7 @@
     const notSelected = 'not selected',
           {audioNode} = rpgen4;
     let SoundFont = null,
-        sf = null;
+        g_sf = null;
     {
         const {html} = addHideArea('load SoundFont'),
               surikov = 'surikov',
@@ -87,16 +87,16 @@
             const author = selectAuthor();
             if(author === surikov) {
                 selectFont.elm.show(hideTime);
-                selectFont.update([notSelected, ...g_sf.surikov.SoundFont_list.tone.keys()], notSelected);
+                selectFont.update([notSelected, ...g_sfLib.surikov.SoundFont_list.tone.keys()], notSelected);
                 selectInstrument.update([notSelected], notSelected);
             }
             else {
                 selectFont.elm.hide(hideTime);
                 selectInstrument.update([notSelected, ...await fetchList(`fontName_${author}`)], notSelected);
             }
-            SoundFont = g_sf[author].SoundFont;
+            SoundFont = g_sfLib[author].SoundFont;
         }).trigger('change');
-        g_sf.surikov.SoundFont_list.onload(() => selectAuthor.elm.trigger('change'));
+        g_sfLib.surikov.SoundFont_list.onload(() => selectAuthor.elm.trigger('change'));
         selectFont.elm.on('change', async () => {
             const font = selectFont();
             if(font === notSelected) return;
@@ -108,7 +108,7 @@
             }));
             selectInstrument.update([
                 [notSelected, notSelected],
-                ...[...g_sf.surikov.SoundFont_list.tone.get(font).keys()].map(id => {
+                ...[...g_sfLib.surikov.SoundFont_list.tone.get(font).keys()].map(id => {
                     const _id = id.slice(0, 3);
                     return [map.has(_id) ? map.get(_id) : id, id];
                 })
@@ -122,7 +122,7 @@
             try {
                 const author = selectAuthor(),
                       fontName = author === surikov ? `${ins}_${selectFont()}` : ins;
-                sf = await SoundFont.load({
+                g_sf = await SoundFont.load({
                     ctx: audioNode.ctx,
                     fontName: author === surikov ? `_tone_${fontName}` : fontName,
                     url: SoundFont.toURL(fontName)
@@ -150,26 +150,26 @@
         const selectId = rpgen3.addSelect(html, {
             label: 'select drum'
         });
-        g_sf.surikov.SoundFont_list.onload(() => {
-            selectFont.update([notSelected, ...g_sf.surikov.SoundFont_list.drum.keys()], notSelected);
+        g_sfLib.surikov.SoundFont_list.onload(() => {
+            selectFont.update([notSelected, ...g_sfLib.surikov.SoundFont_list.drum.keys()], notSelected);
         });
         selectFont.elm.on('change', () => {
             const font = selectFont();
             if(font === notSelected) return;
-            selectId.update([notSelected, ...g_sf.surikov.SoundFont_list.drum.get(font).keys()], notSelected);
+            selectId.update([notSelected, ...g_sfLib.surikov.SoundFont_list.drum.get(font).keys()], notSelected);
         });
         selectId.elm.on('change', () => {
             const font = selectFont(),
                   id = selectId();
             if(font === notSelected || id === notSelected) return;
-            const keys = g_sf.surikov.SoundFont_list.drum.get(font).get(id);
+            const keys = g_sfLib.surikov.SoundFont_list.drum.get(font).get(id);
             load(font, id, keys);
         });
         const load = async (font, id, keys) => {
             const e = [selectFont, selectId].map(v => v.elm).reduce((p, x) => p.add(x));
             e.prop('disabled', true);
             try {
-                await g_sf.surikov.SoundFont_drum.load({
+                await g_sfLib.surikov.SoundFont_drum.load({
                     ctx: audioNode.ctx,
                     font, id, keys
                 });
@@ -188,7 +188,7 @@
             audioNode.drum.gain.value = inputVolume() / 100;
         }).trigger('input');
     }
-    g_sf.surikov.SoundFont_list.init();
+    g_sfLib.surikov.SoundFont_list.init();
     {
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
@@ -255,12 +255,12 @@
                 when: _when,
                 duration
             };
-            if(ch === 9) g_sf.surikov.SoundFont_drum.play({
+            if(ch === 9) g_sfLib.surikov.SoundFont_drum.play({
                 ctx: audioNode.ctx,
                 destination: audioNode.drum,
                 ...param
             });
-            else sf?.play({
+            else g_sf?.play({
                 ctx: audioNode.ctx,
                 destination: audioNode.note,
                 ...param
