@@ -24,7 +24,7 @@ export class SoundFont {
             )) {
                 const {numberOfChannels} = v.buffer;
                 if(ch < numberOfChannels) ch = numberOfChannels;
-                zones.set(pitch, v);
+                zones.set(Number(pitch), v);
             }
             if(this.ch < ch) this.ch = ch;
             fonts.set(fontName, new this(zones, ch, isDrum));
