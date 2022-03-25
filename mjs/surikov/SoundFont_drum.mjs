@@ -16,7 +16,7 @@ export const SoundFont_drum = new class {
                     const fontName = `${key}_${id}_${font}`;
                     return [
                         key,
-                        await SoundFont_surikov.load({
+                        await SoundFont.load({
                             ctx,
                             fontName: `_drum_${fontName}`,
                             url: `https://surikov.github.io/webaudiofontdata/sound/128${fontName}.js`,
