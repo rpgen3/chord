@@ -240,13 +240,13 @@
             return stopMidi();
         }
         while(nowIndex < timeline.length){
-            const {ch, note, volume, when, duration} = timeline[nowIndex],
+            const {ch, pitch, volume, when, duration} = timeline[nowIndex],
                   _when = when - time;
             if(_when > planTime) break;
             nowIndex++;
             if(_when < 0) continue;
             const param = {
-                note,
+                pitch,
                 volume,
                 when: _when,
                 duration
@@ -277,7 +277,7 @@
         if(bpm) return bpm;
         else throw 'BPM is none.';
     };
-    const parseMidi = async midi => { // note, volume, duration
+    const parseMidi = async midi => { // pitch, volume, duration
         stopMidi();
         const {track, timeDivision} = midi,
               heap = new rpgen4.Heap();
@@ -287,17 +287,17 @@
             for(const {deltaTime, type, data, channel} of event) { // 全noteを回収
                 currentTime += deltaTime;
                 if(type !== 8 && type !== 9) continue;
-                const [note, velocity] = data,
+                const [pitch, velocity] = data,
                       isNoteOFF = type === 8 || !velocity;
-                if(now.has(note) && isNoteOFF) {
-                    const unit = now.get(note);
+                if(now.has(pitch) && isNoteOFF) {
+                    const unit = now.get(pitch);
                     unit.end = currentTime;
                     heap.push(unit.start, unit);
-                    now.delete(note);
+                    now.delete(pitch);
                 }
-                else if(!isNoteOFF) now.set(note, new MidiUnit({
+                else if(!isNoteOFF) now.set(pitch, new MidiUnit({
                     ch: channel,
-                    note,
+                    pitch,
                     velocity,
                     start: currentTime
                 }));
@@ -306,13 +306,11 @@
         while(timeline.length) timeline.pop();
         endTime = 0;
         const deltaToSec = 60 / getBPM(midi) / timeDivision;
-        for(const {ch, note, velocity, start, end} of heap) {
-            const _note = rpgen4.piano.note[note - 21];
-            if(!_note) continue;
+        for(const {ch, pitch, velocity, start, end} of heap) {
             const [_start, _end] = [start, end].map(v => v * deltaToSec);
             timeline.push(new AudioUnit({
                 ch,
-                note: _note,
+                pitch,
                 volume: velocity / 0x7F,
                 when: _start,
                 duration: _end - _start
@@ -322,18 +320,18 @@
         endTime += coolTime;
     };
     class MidiUnit {
-        constructor({ch, note, velocity, start}){
+        constructor({ch, pitch, velocity, start}){
             this.ch = ch;
-            this.note = note;
+            this.pitch = pitch;
             this.velocity = velocity;
             this.start = start;
             this.end = -1;
         }
     }
     class AudioUnit {
-        constructor({ch, note, volume, when, duration}){
+        constructor({ch, pitch, volume, when, duration}){
             this.ch = ch;
-            this.note = note;
+            this.pitch = pitch;
             this.volume = volume;
             this.when = when;
             this.duration = duration;
