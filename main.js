@@ -29,12 +29,16 @@
             'RecordWorklet',
             'toWAV',
             'audioNode',
-            'SoundFont_gleitz',
-            'SoundFont_surikov',
-            'SoundFont_surikov_list',
-            'SoundFont_surikov_drum'
         ].map(v => `https://rpgen3.github.io/soundfont/mjs/${v}.mjs`)
     ].flat());
+    const g_sf = {
+        gleitz: await import('https://rpgen3.github.io/soundfont/mjs/gleitz/SoundFont.mjs'),
+        surikov: await importAll([
+            'SoundFont',
+            'SoundFont_drum',
+            'SoundFont_list'
+        ]).map(v => `https://rpgen3.github.io/soundfont/mjs/surikov/${v}.mjs`)
+    };
     [
         'container',
         'btn'
@@ -90,7 +94,7 @@
                 selectFont.elm.hide(hideTime);
                 selectInstrument.update([notSelected, ...await fetchList(`fontName_${author}`)], notSelected);
             }
-            SoundFont = rpgen4[`SoundFont_${author}`];
+            SoundFont = g_sf[author].SoundFont;
         }).trigger('change');
         SoundFont_surikov_list.onload(() => selectAuthor.elm.trigger('change'));
         selectFont.elm.on('change', async () => {
@@ -165,7 +169,7 @@
             const e = [selectFont, selectId].map(v => v.elm).reduce((p, x) => p.add(x));
             e.prop('disabled', true);
             try {
-                await rpgen4.SoundFont_surikov_drum.load({
+                await g_sf.surikov.SoundFont_drum.load({
                     ctx: audioNode.ctx,
                     font, id, keys
                 });
@@ -251,7 +255,7 @@
                 when: _when,
                 duration
             };
-            if(ch === 9) rpgen4.SoundFont_surikov_drum.play({
+            if(ch === 9) g_sf.surikov.SoundFont_drum.play({
                 ctx: audioNode.ctx,
                 destination: audioNode.drum,
                 ...param
