@@ -37,7 +37,7 @@
             'SoundFont',
             'SoundFont_drum',
             'SoundFont_list'
-        ]).map(v => `https://rpgen3.github.io/soundfont/mjs/surikov/${v}.mjs`)
+        ].map(v => `https://rpgen3.github.io/soundfont/mjs/surikov/${v}.mjs`))
     };
     [
         'container',
