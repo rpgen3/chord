@@ -1,4 +1,4 @@
-import {SoundFont} from 'https://rpgen3.github.io/soundfont/mjs/SoundFont.mjs';
+import {SoundFont} from 'https://rpgen3.github.io/soundfont/mjs/surikov/SoundFont.mjs';
 const touch = (map, key, ctor) => {
     if(!map.has(key)) map.set(key, new ctor);
     return map.get(key);
