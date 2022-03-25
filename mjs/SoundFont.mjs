@@ -39,14 +39,14 @@ export class SoundFont {
     play({
         ctx,
         destination = ctx.destination,
-        note = 60, // C4
+        pitch = 60, // C4
         volume = 1.0, // 0.0 ~ 1.0
         when = 0.0,
         duration = 1.0
     }={}){
         const {zones, isDrum} = this;
-        if(!zones.has(note)) return;
-        const zone = zones.get(note),
+        if(!zones.has(pitch)) return;
+        const zone = zones.get(pitch),
               src = ctx.createBufferSource(),
               g = ctx.createGain(),
               _when = when + ctx.currentTime,
