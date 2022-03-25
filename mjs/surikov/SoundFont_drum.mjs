@@ -11,11 +11,11 @@ export const SoundFont_drum = new class {
     async load({ctx, font, id, keys}){
         const map = touch(touch(this.fonts, font, Map), id, Map);
         if(!map.size) {
-            for(const [tone, sf] of (
+            for(const [pitch, sf] of (
                 await Promise.all([...keys].map(async key => {
                     const fontName = `${key}_${id}_${font}`;
                     return [
-                        key,
+                        Number(key),
                         await SoundFont.load({
                             ctx,
                             fontName: `_drum_${fontName}`,
@@ -25,7 +25,7 @@ export const SoundFont_drum = new class {
                         })
                     ];
                 }))
-            )) map.set(tone, sf);
+            )) map.set(pitch, sf);
         }
         this.font = map;
     }
