@@ -32,7 +32,7 @@ export const SoundFont_drum = new class {
     play(v){
         const {font} = this;
         if(!font) return;
-        const {note} = v;
-        if(font.has(note)) font.get(note).play(v);
+        const {pitch} = v;
+        if(font.has(pitch)) font.get(pitch).play(v);
     }
 };
