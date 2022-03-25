@@ -56,8 +56,8 @@ export class SoundFont {
         src.playbackRate.setValueAtTime(_param.playbackRate, 0);
         Object.assign(src, _param.src);
         const _duration = duration + 0.05,
-              end = _when + (isDrum ? buffer.duration : (src.loop ? _duration : Math.min(_duration, _param.min)));
-        if(!isDrum) g.gain.linearRampToValueAtTime(0, end + 0.5); // magic number
+              end = _when + (isDrum ? buffer.duration : (src.loop ? _duration : Math.min(_duration, _param.min))) + 1; // magic number
+        if(!isDrum) g.gain.linearRampToValueAtTime(0, end);
         src.connect(g).connect(destination);
         src.start(_when);
         src.stop(end);
