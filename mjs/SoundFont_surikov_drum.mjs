@@ -1,10 +1,9 @@
-import {piano} from 'https://rpgen3.github.io/midi/mjs/piano.mjs';
-import {SoundFont_surikov} from 'https://rpgen3.github.io/soundfont/mjs/SoundFont_surikov.mjs';
+import {SoundFont} from 'https://rpgen3.github.io/soundfont/mjs/SoundFont.mjs';
 const touch = (map, key, ctor) => {
     if(!map.has(key)) map.set(key, new ctor);
     return map.get(key);
 };
-export const SoundFont_surikov_drum = new class {
+export const SoundFont_drum = new class {
     constructor(){
         this.font = null;
         this.fonts = new Map;
@@ -16,7 +15,7 @@ export const SoundFont_surikov_drum = new class {
                 await Promise.all([...keys].map(async key => {
                     const fontName = `${key}_${id}_${font}`;
                     return [
-                        piano.note[key - 21],
+                        key,
                         await SoundFont_surikov.load({
                             ctx,
                             fontName: `_drum_${fontName}`,
