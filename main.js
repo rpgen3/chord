@@ -65,7 +65,7 @@
         });
     };
     const notSelected = 'not selected',
-          {SoundFont_surikov_list, audioNode} = rpgen4;
+          {audioNode} = rpgen4;
     let SoundFont = null,
         sf = null;
     {
@@ -87,7 +87,7 @@
             const author = selectAuthor();
             if(author === surikov) {
                 selectFont.elm.show(hideTime);
-                selectFont.update([notSelected, ...SoundFont_surikov_list.tone.keys()], notSelected);
+                selectFont.update([notSelected, ...g_sf.surikov.SoundFont_list.tone.keys()], notSelected);
                 selectInstrument.update([notSelected], notSelected);
             }
             else {
@@ -96,7 +96,7 @@
             }
             SoundFont = g_sf[author].SoundFont;
         }).trigger('change');
-        SoundFont_surikov_list.onload(() => selectAuthor.elm.trigger('change'));
+        g_sf.surikov.SoundFont_list.onload(() => selectAuthor.elm.trigger('change'));
         selectFont.elm.on('change', async () => {
             const font = selectFont();
             if(font === notSelected) return;
@@ -108,7 +108,7 @@
             }));
             selectInstrument.update([
                 [notSelected, notSelected],
-                ...[...SoundFont_surikov_list.tone.get(font).keys()].map(id => {
+                ...[...g_sf.surikov.SoundFont_list.tone.get(font).keys()].map(id => {
                     const _id = id.slice(0, 3);
                     return [map.has(_id) ? map.get(_id) : id, id];
                 })
@@ -150,19 +150,19 @@
         const selectId = rpgen3.addSelect(html, {
             label: 'select drum'
         });
-        SoundFont_surikov_list.onload(() => {
-            selectFont.update([notSelected, ...SoundFont_surikov_list.drum.keys()], notSelected);
+        g_sf.surikov.SoundFont_list.onload(() => {
+            selectFont.update([notSelected, ...g_sf.surikov.SoundFont_list.drum.keys()], notSelected);
         });
         selectFont.elm.on('change', () => {
             const font = selectFont();
             if(font === notSelected) return;
-            selectId.update([notSelected, ...SoundFont_surikov_list.drum.get(font).keys()], notSelected);
+            selectId.update([notSelected, ...g_sf.surikov.SoundFont_list.drum.get(font).keys()], notSelected);
         });
         selectId.elm.on('change', () => {
             const font = selectFont(),
                   id = selectId();
             if(font === notSelected || id === notSelected) return;
-            const keys = SoundFont_surikov_list.drum.get(font).get(id);
+            const keys = g_sf.surikov.SoundFont_list.drum.get(font).get(id);
             load(font, id, keys);
         });
         const load = async (font, id, keys) => {
@@ -188,7 +188,7 @@
             audioNode.drum.gain.value = inputVolume() / 100;
         }).trigger('input');
     }
-    SoundFont_surikov_list.init();
+    g_sf.surikov.SoundFont_list.init();
     {
         const {html} = addHideArea('play MIDI');
         const selectMidi = rpgen3.addSelect(html, {
