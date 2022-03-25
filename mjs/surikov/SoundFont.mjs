@@ -37,7 +37,7 @@ export class SoundFont {
         this.isDrum = isDrum;
     }
     play({
-        ctx,
+        ctx = new AudioContext,
         destination = ctx.destination,
         pitch = 60, // C4
         volume = 1.0, // 0.0 ~ 1.0
