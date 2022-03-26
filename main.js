@@ -296,7 +296,7 @@
                 if(now.has(pitch) && isNoteOFF) {
                     const unit = now.get(pitch);
                     unit.end = currentTime;
-                    heap.push(unit.start, unit);
+                    heap.add(unit.start, unit);
                     now.delete(pitch);
                 }
                 else if(!isNoteOFF) now.set(pitch, new MidiUnit({
