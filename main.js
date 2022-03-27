@@ -281,7 +281,7 @@
         if(bpm) return bpm;
         else throw 'BPM is none.';
     };
-    const parseMidi = async midi => { // pitch, volume, duration
+    const parseMidi = midi => { // pitch, volume, duration
         stopMidi();
         const {track, timeDivision} = midi,
               heap = new rpgen4.Heap();
