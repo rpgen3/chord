@@ -56,7 +56,7 @@ export class SoundFont {
         src.playbackRate.setValueAtTime(_param.playbackRate, 0);
         Object.assign(src, _param.src);
         const _duration = duration + 0.05,
-              end = _when + (isDrum ? buffer.duration : (src.loop ? _duration : Math.max(_duration, _param.min)));
+              end = _when + (isDrum ? buffer.duration : (src.loop ? _duration : Math.min(_duration, _param.max)));
         if(!isDrum) g.gain.linearRampToValueAtTime(0, end);
         src.connect(g).connect(destination);
         src.start(_when);
@@ -130,10 +130,10 @@ const addParam = (zone, pitch) => {
     } = zone,
           baseDetune = originalPitch - 100 * coarseTune - fineTune,
           playbackRate = Math.pow(2, (100 * pitch - baseDetune) / 1200),
-          min = buffer.duration / playbackRate,
+          max = buffer.duration / playbackRate,
           src = {
               loop: loopStart >= 1 && loopStart < loopEnd
           };
     if(src.loop) [src.loopStart, src.loopEnd] = [loopStart, loopEnd].map(v => v / sampleRate + delay);
-    zone._param = {playbackRate, min, src};
+    zone._param = {playbackRate, max, src};
 };
