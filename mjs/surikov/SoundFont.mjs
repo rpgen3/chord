@@ -1,7 +1,7 @@
 // https://github.com/surikov/webaudiofontdata/
 import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
 export class SoundFont {
-    static afterTime = 0.; // echo?
+    static afterTime = 0.5; // echo?
     static fonts = new Map;
     static ch = -1;
     static toURL(fontName){
