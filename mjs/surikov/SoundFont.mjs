@@ -1,7 +1,6 @@
 // https://github.com/surikov/webaudiofontdata/
 import {getScript} from 'https://rpgen3.github.io/mylib/export/import.mjs';
 export class SoundFont {
-    static afterTime = 0.3; // echo?
     static fonts = new Map;
     static ch = -1;
     static toURL(fontName){
@@ -56,8 +55,8 @@ export class SoundFont {
         g.gain.value = volume;
         src.playbackRate.setValueAtTime(_param.playbackRate, 0);
         Object.assign(src, _param.src);
-        const _duration = duration + this.constructor.afterTime,
-              end = _when + (isDrum ? buffer.duration : (src.loop ? _duration : Math.min(_duration, _param.min)));
+        const _duration = duration + 0.05,
+              end = _when + (isDrum ? buffer.duration : (src.loop ? _duration : Math.max(_duration, _param.min)));
         if(!isDrum) g.gain.linearRampToValueAtTime(0, end);
         src.connect(g).connect(destination);
         src.start(_when);
